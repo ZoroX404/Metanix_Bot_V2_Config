@@ -1,0 +1,13 @@
+user:
+  name: dark
+  github: sparx2201
+
+python_version: "3.10"
+
+commands:
+  build:
+    - "pip install -r requirements.txt"
+  package:
+    - "ffmpeg"
+  start:
+    - "python bot.py"
