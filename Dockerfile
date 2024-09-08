@@ -4,4 +4,4 @@ WORKDIR /app
 COPY . /app/
 RUN pip install -r requirements.txt
 # Install ffmpeg using apt
-CMD ["python", "bot.py"]
+CMD python bot.py 
