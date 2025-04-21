@@ -163,4 +163,9 @@ async def imp(client, message):
         
     await message.reply_text("If Prefix/Suffix or both don't existed and you are\nadding yours Prefix/Suffix then use space in it\n\nspace = '-s'\nSet Prefix = {prefix}-s\nSet Suffix = -s{suffix}\n\nIf you are removing existed Prefix/Suffix by using Remname and\nAdding your Prefix/Suffix  then don't use space in it\n\nspace = '-s'\nSet Prefix = {prefix}\nSet Suffix = {suffix}", reply_markup=CLS)
 
-
+@Client.on_message(filters.private & filters.command('document'))
+async def handle_document_command(client, message):
+    user_id = message.from_user.id
+    await db.set_upload_type(user_id, "document")
+    await message.reply_text("✅ Your upload format is now set to **Document**.")
+    print(f"[LOG] Set upload type to Document for user_id={user_id}")
