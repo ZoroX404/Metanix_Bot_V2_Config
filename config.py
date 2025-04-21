@@ -25,7 +25,7 @@ class Config(object):
     BOT_UPTIME = time.time()
     START_PIC = os.environ.get("START_PIC", "https://telegra.ph/file/4d6f2d8ba25b50e9ff0a5.jpg")
     ADMIN = [int(admin) if id_pattern.search(
-        admin) else admin for admin in os.environ.get('ADMIN', '7019977613 6276548893 1263768500 5157971857 1257535081 6974925276 6070913153 6030828548').split()]  # ⚠️ Required
+        admin) else admin for admin in os.environ.get('ADMIN', '5368359455 7019977613 6276548893 1263768500 5157971857 1257535081 6974925276 6070913153 6030828548').split()]  # ⚠️ Required
     
     FORCE_SUB = os.environ.get("FORCE_SUB", "Animeke14hai") # ⚠️ Required Username without @
     LOG_CHANNEL = int(os.environ.get("LOG_CHANNEL", "-1001588776212"))  # ⚠️ Required
