@@ -18,20 +18,14 @@ app = Client("test", api_id=Config.STRING_API_ID, api_hash=Config.STRING_API_HAS
 
 
 # Define the callback for the 'upload' buttons
-@Client.on_message(filters.private & (filters.document | filters.audio | filters.video))
+@Client.on_message(filters.private & (filters.document | filters.audio | filters.video) & filters.user(Config.ADMIN))
 async def rename(bot, message):
-    print("Received a message!")
-    print("From user:", message.from_user.id)
-
-    if message.from_user.id not in Config.ADMIN:
-        await message.reply_text("**Access Denied** ⚠️ \nError: You are not authorized to use my features")
-        return
-    
     print("Function called")
     file = getattr(message, message.media.value)
     filename = file.file_name  
     if file.file_size > 2000 * 1024 * 1024:
          return await message.reply_text("Sorry Bro This Bot Doesn't Support Uploading Files Bigger Than 2GB")
+
 
 #    if message.document:
 #        file_id = message.document.file_id
