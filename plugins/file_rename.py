@@ -18,8 +18,13 @@ app = Client("test", api_id=Config.STRING_API_ID, api_hash=Config.STRING_API_HAS
 
 
 # Define the callback for the 'upload' buttons
-@Client.on_message(filters.private & (filters.document | filters.audio | filters.video) & filters.user(Config.ADMIN))
+@Client.on_message(filters.private & (filters.document | filters.audio | filters.video))
 async def rename(bot, message):
+    
+    if message.from_user.id not in Config.ADMIN:
+        await message.reply_text("**Access Denied** ⚠️ \nError: You are not authorized to use my features")
+        return
+    
     print("Function called")
     file = getattr(message, message.media.value)
     filename = file.file_name  
