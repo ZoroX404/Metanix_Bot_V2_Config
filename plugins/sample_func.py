@@ -21,9 +21,11 @@ app = Client("test", api_id=Config.STRING_API_ID, api_hash=Config.STRING_API_HAS
 
 @Client.on_message(filters.private & filters.command("sv") & filters.reply)
 async def sample_video_handler(bot: Client, message: Message):
+    print("start")
     replied = message.reply_to_message
     if not replied:
         return await message.reply("❌ Please reply to a video message when using this command.")
+        print("1st")
 
     if replied.video:
         media = replied.video
