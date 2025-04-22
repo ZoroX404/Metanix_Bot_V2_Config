@@ -35,7 +35,7 @@ async def sample_video_handler(bot: Client, message: Message):
 
     # Parse sample duration from command
     try:
-        sample_duration = int(message.command[1])
+        sample_duration = int(replied.command[1])
         if sample_duration <= 0:
             raise ValueError
     except (IndexError, ValueError):
