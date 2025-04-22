@@ -21,21 +21,22 @@ app = Client("test", api_id=Config.STRING_API_ID, api_hash=Config.STRING_API_HAS
 
 @Client.on_message(filters.private & filters.command("sv") & filters.reply)
 async def sample_video_handler(bot: Client, message: Message):
-    print("Meow")
     replied = message.reply_to_message
 
     # Ensure it's a video or video document
-    # if replied.video:
-    #     media = replied.video
-    # elif replied.document and replied.document.mime_type and replied.document.mime_type.startswith("video"):
-    #     media = replied.document
-    # else:
-    #     return await message.reply("❌ This command only works on actual videos or video documents.")
-    
+    if replied.video:
+        media = replied.video
+    elif replied.document and replied.document.mime_type and replied.document.mime_type.startswith("video"):
+        media = replied.document
+    else:
+        return await message.reply("❌ This command only works on actual videos or video documents.")
 
     # Parse sample duration from command
     try:
-        sample_duration = int(replied.command[1])
+        command_parts = message.text.split()
+        if len(command_parts) < 2:
+            raise ValueError
+        sample_duration = int(command_parts[1])
         if sample_duration <= 0:
             raise ValueError
     except (IndexError, ValueError):
@@ -48,8 +49,10 @@ async def sample_video_handler(bot: Client, message: Message):
     output_path = f"downloads/sample_{file_id}.mkv"
 
     # Ensure the downloads directory exists
-    if not os.path.exists("downloads"):
-        os.makedirs("downloads")
+    try:
+        os.makedirs("downloads", exist_ok=True)
+    except Exception as e:
+        return await msg.edit(f"❌ Failed to create downloads directory: {e}")
 
     try:
         await bot.download_media(replied, file_name=input_path)
@@ -64,7 +67,6 @@ async def sample_video_handler(bot: Client, message: Message):
             total_duration = metadata.get("duration").seconds
         else:
             return await msg.edit("❌ Could not determine video duration.")
-        parser.close()
     except Exception as e:
         return await msg.edit(f"❌ Error reading metadata: {e}")
 
@@ -74,7 +76,11 @@ async def sample_video_handler(bot: Client, message: Message):
         )
 
     # Pick a random start time for the sample
-    start_time = random.randint(0, total_duration - sample_duration)
+    try:
+        start_time = random.randint(0, total_duration - sample_duration)
+    except ValueError:
+        return await msg.edit("❌ Could not calculate start time for trimming.")
+
     await msg.edit(f"✂️ Trimming from **{start_time}s** out of {total_duration}s...")
 
     # Run FFmpeg to trim the video
@@ -85,11 +91,8 @@ async def sample_video_handler(bot: Client, message: Message):
     stdout, stderr = await process.communicate()
 
     # Check if the command executed properly
-    if stderr:
-        return await msg.edit(f"❌ FFmpeg Error: {stderr.decode()}")
-
-    if not os.path.exists(output_path):
-        return await msg.edit("❌ Failed to create the sample.")
+    if process.returncode != 0 or not os.path.exists(output_path):
+        return await msg.edit(f"❌ FFmpeg Error: {stderr.decode() if stderr else 'Unknown error'}")
 
     await msg.edit("📤 Uploading sample...")
 
@@ -98,7 +101,7 @@ async def sample_video_handler(bot: Client, message: Message):
             chat_id=message.chat.id,
             video=output_path,
             caption=f"🎬 Random sample ({sample_duration}s from {start_time}s)",
-            reply_to_message_id=message.id
+            reply_to_message_id=message.reply_to_message.id
         )
     except Exception as e:
         return await msg.edit(f"❌ Upload failed: {e}")
@@ -106,7 +109,10 @@ async def sample_video_handler(bot: Client, message: Message):
     await msg.delete()
 
     # Cleanup
-    if os.path.exists(input_path):
-        os.remove(input_path)
-    if os.path.exists(output_path):
-        os.remove(output_path)
+    try:
+        if os.path.exists(input_path):
+            os.remove(input_path)
+        if os.path.exists(output_path):
+            os.remove(output_path)
+    except Exception as e:
+        print(f"Cleanup failed: {e}")
