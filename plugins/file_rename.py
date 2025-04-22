@@ -52,6 +52,7 @@ async def rename(bot, message):
 
     
     new_filename_  = file.file_name 
+    print(f"Filename: {new_filename_}")
  #   new_filename_ = new_name.split(":-")[1]
     remname_text = await db.get_remname(message.chat.id)  # Get the remname text from the user's database entry
 
