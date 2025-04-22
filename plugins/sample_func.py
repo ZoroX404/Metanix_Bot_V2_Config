@@ -2,12 +2,20 @@ import random
 import asyncio
 import os
 import time
-import shutil
+import shutil  # Optional cleanup
 from pyrogram import Client, filters
-from pyrogram.types import Message
+from pyrogram.enums import MessageMediaType
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ForceReply, Message
 from hachoir.metadata import extractMetadata
 from hachoir.parser import createParser
-from helper.utils import progress_for_pyrogram, convert, humanbytes
+from PIL import Image
+
+from pyrogram.types import Message
+
+from helper.utils import progress_for_pyrogram, convert, humanbytes, add_prefix_suffix, add_sprefix_suffix, add_prefix_ssuffix, add_sprefix_ssuffix
+from helper.ffmpeg import fix_thumb, take_screen_shot
+from helper.database import db
+from config import Config
 
 app = Client("test", api_id=Config.STRING_API_ID, api_hash=Config.STRING_API_HASH, session_string=Config.STRING_SESSION)
 
