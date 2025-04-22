@@ -25,12 +25,13 @@ async def sample_video_handler(bot: Client, message: Message):
     replied = message.reply_to_message
 
     # Ensure it's a video or video document
-    if replied.video:
-        media = replied.video
-    elif replied.document and replied.document.mime_type and replied.document.mime_type.startswith("video"):
-        media = replied.document
-    else:
-        return await message.reply("❌ This command only works on actual videos or video documents.")
+    # if replied.video:
+    #     media = replied.video
+    # elif replied.document and replied.document.mime_type and replied.document.mime_type.startswith("video"):
+    #     media = replied.document
+    # else:
+    #     return await message.reply("❌ This command only works on actual videos or video documents.")
+    
 
     # Parse sample duration from command
     try:
