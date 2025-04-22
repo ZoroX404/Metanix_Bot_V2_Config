@@ -19,7 +19,7 @@ from config import Config
 
 app = Client("test", api_id=Config.STRING_API_ID, api_hash=Config.STRING_API_HASH, session_string=Config.STRING_SESSION)
 
-@Client.on_message(filters.private & filters.command("sv") & filters.reply & (filters.video | filters.document | filters.audio) & filters.user(Config.ADMIN))
+@Client.on_message(filters.private & filters.command("sv") & filters.reply)
 async def sample_video_handler(bot: Client, message: Message):
     print("Meow")
     replied = message.reply_to_message
