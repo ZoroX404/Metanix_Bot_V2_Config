@@ -22,24 +22,24 @@ app = Client("test", api_id=Config.STRING_API_ID, api_hash=Config.STRING_API_HAS
 @Client.on_message(filters.private & filters.command("sv") & filters.reply)
 async def sample_video_handler(bot: Client, message: Message):
     replied = message.reply_to_message
-    if replied.document:
+    if replied.video:  # Check if the replied message has a video
         media = replied.video
-    if replied.document:
-        media = replied.docment
+    elif replied.document:  # Check if the replied message has a document
+        media = replied.document
     else:
         return await message.reply("❌ This command only works on actual videos or video documents.")
 
-    try:
-        command_parts = message.text.split()
-        if len(command_parts) < 2 or len(command_parts) > 2:
-            await message.reply("meow1")
-            raise ValueError
-        sample_duration = int(command_parts[1])
-        if sample_duration <= 0:
-            await message.reply("meow2")
-            raise ValueError
-    except (IndexError, ValueError):
-        return await message.reply("❗ Usage: Reply to a video with `/sv <duration-in-seconds>`")
+    command_parts = message.text.split()
+    if len(command_parts) != 2:  # Ensure exactly one argument is provided
+        await message.reply("❗ Usage: Reply to a video with `/sv <duration-in-seconds>`")
+        raise ValueError
+    sample_duration = int(command_parts[1])
+    if sample_duration <= 0:  # Ensure the duration is a positive integer
+        await message.reply("❌ Duration must be a positive number.")
+        raise ValueError
+
+    # Proceed with further processing of `media` and `sample_duration`
+    await message.reply(f"✅ Received media. Sampling duration: {sample_duration} seconds.")
     
         
 
