@@ -32,15 +32,14 @@ async def sample_video_handler(client, message):
     else:
         return await message.reply("❌ This command only works on actual videos or video documents.")
 
-    try:
-        sample_duration = int(message.text.split()[1])
-    except (IndexError, ValueError):
-        return await message.reply("❗ Usage: Reply to a video with `/sv <duration-in-seconds>`")
+    if len(message.command) != 2:
+        return await message.reply_text("❗ Usage: Reply to a video with `/sv <duration-in-seconds>`")
+
+    sample_duration = int(message.text.split(' ', 1)[1])
 
     if sample_duration <= 0:
         return await message.reply("❌ Duration must be a positive number.")
-
-    await message.reply(f"✅ Received media. Sampling duration: {sample_duration} seconds.")
+    
 
 
     
