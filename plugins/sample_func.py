@@ -19,22 +19,22 @@ from config import Config
 
 app = Client("test", api_id=Config.STRING_API_ID, api_hash=Config.STRING_API_HASH, session_string=Config.STRING_SESSION)
 
-@Client.on_message(filters.private & filters.command("sv") & filters.reply)
+@Client.on_message(filters.private & filters.command("sv"))
 async def sample_video_handler(client, message):
     print("start")
+    print("reply_to_message:", message.reply_to_message)
+
     replied = message.reply_to_message
     if not replied:
         return await message.reply("❌ Please reply to a video message when using this command.")
-        print("1st")
 
     if replied.video:
-        media = replied.video
-        await message.reply("meow")
+        await message.reply("✅ Replied to a video.")
     elif replied.document:
-        media = replied.document
-        await message.reply("meow")
+        await message.reply("✅ Replied to a document.")
     else:
-        return await message.reply("❌ This command only works on actual videos or video documents.")
+        await message.reply("❌ This is not a video or video file.")
+
 
     try:
         sample_duration = int(message.text.split()[1])
