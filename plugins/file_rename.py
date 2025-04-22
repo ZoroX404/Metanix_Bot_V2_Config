@@ -57,6 +57,7 @@ async def rename(bot, message):
     remname_text = await db.get_remname(message.chat.id)  # Get the remname text from the user's database entry
 
     if remname_text:
+        print("Remname presents")
         split_text = remname_text.split(', ')
 
         remname1 = split_text[0] if len(split_text) > 0 else None
@@ -110,6 +111,7 @@ async def rename(bot, message):
         space = "-s"
         
         if prefix is None and suffix is None:
+                
                 new_filename = add_prefix_suffix(new_filename_, prefix, suffix)
 
         elif prefix is None:
