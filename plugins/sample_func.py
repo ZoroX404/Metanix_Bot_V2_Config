@@ -2,30 +2,21 @@ import random
 import asyncio
 import os
 import time
-import shutil  # Optional cleanup
+import shutil
 from pyrogram import Client, filters
-from pyrogram.enums import MessageMediaType
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ForceReply, Message
+from pyrogram.types import Message
 from hachoir.metadata import extractMetadata
 from hachoir.parser import createParser
-from PIL import Image
-
-from pyrogram.types import Message
-
-from helper.utils import progress_for_pyrogram, convert, humanbytes, add_prefix_suffix, add_sprefix_suffix, add_prefix_ssuffix, add_sprefix_ssuffix
-from helper.ffmpeg import fix_thumb, take_screen_shot
-from helper.database import db
-from config import Config
+from helper.utils import progress_for_pyrogram, convert, humanbytes
 
 app = Client("test", api_id=Config.STRING_API_ID, api_hash=Config.STRING_API_HASH, session_string=Config.STRING_SESSION)
 
-
-
 @Client.on_message(filters.private & filters.command("sv") & filters.reply & (filters.video | filters.document | filters.audio) & filters.user(Config.ADMIN))
 async def sample_video_handler(bot: Client, message: Message):
+    print("Meow")
     replied = message.reply_to_message
 
-    # Only allow actual videos or video-documents
+    # Ensure it's a video or video document
     if replied.video:
         media = replied.video
     elif replied.document and replied.document.mime_type and replied.document.mime_type.startswith("video"):
@@ -47,12 +38,16 @@ async def sample_video_handler(bot: Client, message: Message):
     input_path = f"downloads/{file_id}"
     output_path = f"downloads/sample_{file_id}.mkv"
 
+    # Ensure the downloads directory exists
+    if not os.path.exists("downloads"):
+        os.makedirs("downloads")
+
     try:
         await bot.download_media(replied, file_name=input_path)
     except Exception as e:
         return await msg.edit(f"❌ Failed to download: {e}")
 
-    # Get total duration
+    # Get total duration of the video
     try:
         parser = createParser(input_path)
         metadata = extractMetadata(parser)
@@ -69,16 +64,20 @@ async def sample_video_handler(bot: Client, message: Message):
             f"⚠️ The video is only {total_duration}s long. You requested {sample_duration}s."
         )
 
-    # Pick random start time
+    # Pick a random start time for the sample
     start_time = random.randint(0, total_duration - sample_duration)
     await msg.edit(f"✂️ Trimming from **{start_time}s** out of {total_duration}s...")
 
-    # Run ffmpeg to trim and convert to .mkv
+    # Run FFmpeg to trim the video
     cmd = f'ffmpeg -y -ss {start_time} -i "{input_path}" -t {sample_duration} -c copy "{output_path}"'
     process = await asyncio.create_subprocess_shell(
         cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
     )
-    await process.communicate()
+    stdout, stderr = await process.communicate()
+
+    # Check if the command executed properly
+    if stderr:
+        return await msg.edit(f"❌ FFmpeg Error: {stderr.decode()}")
 
     if not os.path.exists(output_path):
         return await msg.edit("❌ Failed to create the sample.")
@@ -98,5 +97,7 @@ async def sample_video_handler(bot: Client, message: Message):
     await msg.delete()
 
     # Cleanup
-    os.remove(input_path)
-    os.remove(output_path)
+    if os.path.exists(input_path):
+        os.remove(input_path)
+    if os.path.exists(output_path):
+        os.remove(output_path)
