@@ -23,7 +23,25 @@ app = Client("test", api_id=Config.STRING_API_ID, api_hash=Config.STRING_API_HAS
 async def sample_video_handler(bot: Client, message: Message):
     replied = message.reply_to_message
     if replied.document:
-        await message.reply("Meowww")
+        media = replied.video
+    if replied.document:
+        media = replied.docment
+    else:
+        return await message.reply("❌ This command only works on actual videos or video documents.")
+
+    try:
+        command_parts = message.text.split()
+        if len(command_parts) < 2 or len(command_parts) > 2:
+            await message.reply("meow1")
+            raise ValueError
+        sample_duration = int(command_parts[1])
+        if sample_duration <= 0:
+            await message.reply("meow2")
+            raise ValueError
+    except (IndexError, ValueError):
+        return await message.reply("❗ Usage: Reply to a video with `/sv <duration-in-seconds>`")
+    
+        
 
     # Ensure it's a video or video document
     # if replied.video:
