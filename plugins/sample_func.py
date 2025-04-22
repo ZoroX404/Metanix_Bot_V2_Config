@@ -29,8 +29,10 @@ async def sample_video_handler(client, message):
 
     if replied.video:
         media = replied.video
+        await message.reply("meow")
     elif replied.document:
         media = replied.document
+        await message.reply("meow")
     else:
         return await message.reply("❌ This command only works on actual videos or video documents.")
 
