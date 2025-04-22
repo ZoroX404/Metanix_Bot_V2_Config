@@ -10,6 +10,8 @@ from hachoir.metadata import extractMetadata
 from hachoir.parser import createParser
 from PIL import Image
 
+from pyrogram.types import Message
+
 from helper.utils import progress_for_pyrogram, convert, humanbytes, add_prefix_suffix, add_sprefix_suffix, add_prefix_ssuffix, add_sprefix_ssuffix
 from helper.ffmpeg import fix_thumb, take_screen_shot
 from helper.database import db
@@ -18,42 +20,43 @@ from config import Config
 app = Client("test", api_id=Config.STRING_API_ID, api_hash=Config.STRING_API_HASH, session_string=Config.STRING_SESSION)
 
 
-@Client.on_message(filters.private & filters.command("sv") & filters.reply & filters.user(Config.ADMIN))
-async def sample_random_segment(bot: Client, message: Message):
+
+@Client.on_message(filters.private & filters.command("sv") & filters.reply & (filters.video | filters.document | filters.audio) & filters.user(Config.ADMIN))
+async def sample_video_handler(bot: Client, message: Message):
     replied = message.reply_to_message
 
-    # Ensure it's a .mp4 video or document
-    is_video = replied.video and replied.video.file_name and replied.video.file_name.endswith(".mp4")
-    is_doc_mp4 = replied.document and replied.document.file_name and replied.document.file_name.endswith(".mp4")
+    # Only allow actual videos or video-documents
+    if replied.video:
+        media = replied.video
+    elif replied.document and replied.document.mime_type and replied.document.mime_type.startswith("video"):
+        media = replied.document
+    else:
+        return await message.reply("❌ This command only works on actual videos or video documents.")
 
-    if not (is_video or is_doc_mp4):
-        return await message.reply("❗ Please reply to a video or .mp4 document.")
-
-    # Get duration from command
+    # Parse sample duration from command
     try:
         sample_duration = int(message.command[1])
         if sample_duration <= 0:
             raise ValueError
     except (IndexError, ValueError):
-        return await message.reply("❗ Usage: Reply to a .mp4 with `/sv <duration-in-seconds>`")
+        return await message.reply("❗ Usage: Reply to a video with `/sv <duration-in-seconds>`")
 
     msg = await message.reply("📥 Downloading media...")
 
-    media = replied.video or replied.document
     file_id = media.file_id
-    input_path = f"downloads/{file_id}.mp4"
-    output_path = f"downloads/sample_{file_id}.mp4"
+    input_path = f"downloads/{file_id}"
+    output_path = f"downloads/sample_{file_id}.mkv"
 
     try:
         await bot.download_media(replied, file_name=input_path)
     except Exception as e:
         return await msg.edit(f"❌ Failed to download: {e}")
 
-    # Extract full duration
+    # Get total duration
     try:
         parser = createParser(input_path)
         metadata = extractMetadata(parser)
-        if metadata.has("duration"):
+        if metadata and metadata.has("duration"):
             total_duration = metadata.get("duration").seconds
         else:
             return await msg.edit("❌ Could not determine video duration.")
@@ -70,7 +73,7 @@ async def sample_random_segment(bot: Client, message: Message):
     start_time = random.randint(0, total_duration - sample_duration)
     await msg.edit(f"✂️ Trimming from **{start_time}s** out of {total_duration}s...")
 
-    # Run ffmpeg to trim
+    # Run ffmpeg to trim and convert to .mkv
     cmd = f'ffmpeg -y -ss {start_time} -i "{input_path}" -t {sample_duration} -c copy "{output_path}"'
     process = await asyncio.create_subprocess_shell(
         cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
@@ -78,13 +81,13 @@ async def sample_random_segment(bot: Client, message: Message):
     await process.communicate()
 
     if not os.path.exists(output_path):
-        return await msg.edit("❌ Failed to trim the video.")
+        return await msg.edit("❌ Failed to create the sample.")
 
     await msg.edit("📤 Uploading sample...")
 
     try:
         await bot.send_video(
-            message.chat.id,
+            chat_id=message.chat.id,
             video=output_path,
             caption=f"🎬 Random sample ({sample_duration}s from {start_time}s)",
             reply_to_message_id=message.id
@@ -93,6 +96,7 @@ async def sample_random_segment(bot: Client, message: Message):
         return await msg.edit(f"❌ Upload failed: {e}")
 
     await msg.delete()
+
+    # Cleanup
     os.remove(input_path)
     os.remove(output_path)
-
