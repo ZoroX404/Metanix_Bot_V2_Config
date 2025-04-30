@@ -9,6 +9,12 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ForceRepl
 from hachoir.metadata import extractMetadata
 from hachoir.parser import createParser
 from PIL import Image
+import os
+import asyncio
+import time
+import random
+from pyrogram import Client, filters
+from moviepy.editor import VideoFileClip
 
 from pyrogram.types import Message
 
@@ -25,21 +31,19 @@ from pyrogram.enums import MessageMediaType
 
 @Client.on_message(filters.private & filters.command("sv"))
 async def sample_video_handler(client, message):
-    # First check if the command has the correct number of arguments
+    # Step 1: Check usage
     if len(message.command) != 2:
-        return await message.reply_text("❗ Usage: Reply to a video with `/sv duration-in-seconds`")
+        return await message.reply_text("❗ Usage: Reply to a video with `/sv <duration-in-seconds>`", parse_mode="markdown")
 
+    # Step 2: Validate replied message
     replied = message.reply_to_message
     if not replied:
         return await message.reply("❌ Please reply to a video message when using this command.")
 
-    if replied.video:
-        media = replied.video
-    elif replied.document:
-        media = replied.document
-    else:
+    if not (replied.video or replied.document):
         return await message.reply("❌ This command only works on actual videos or video documents.")
 
+    # Step 3: Parse and validate duration
     try:
         sample_duration = int(message.command[1])
         if sample_duration <= 0:
@@ -47,6 +51,46 @@ async def sample_video_handler(client, message):
     except ValueError:
         return await message.reply("❌ Duration must be a number.")
 
+    # Step 4: Download the video
+    status_msg = await message.reply("📥 Downloading video...")
+    media = replied.video or replied.document
+    file_path = await client.download_media(media)
+    
+    try:
+        # Step 5: Check video duration
+        clip = VideoFileClip(file_path)
+        actual_duration = int(clip.duration)
+        if sample_duration > actual_duration:
+            clip.close()
+            os.remove(file_path)
+            return await status_msg.edit(f"❌ Given duration is longer than the actual video duration ({actual_duration} seconds).")
+
+        # Step 6: Choose random start time
+        max_start = actual_duration - sample_duration
+        start_time = random.randint(0, max_start)
+        trimmed_path = f"sample_{int(time.time())}_{sample_duration}s.mp4"
+
+        await status_msg.edit(f"✂️ Trimming random {sample_duration}s from {start_time}s...")
+
+        # Use ffmpeg to extract the segment
+        cmd = f"ffmpeg -ss {start_time} -i '{file_path}' -t {sample_duration} -c copy '{trimmed_path}' -y"
+        process = await asyncio.create_subprocess_shell(cmd)
+        await process.communicate()
+
+        # Step 7: Send trimmed video
+        await status_msg.edit("📤 Uploading sample video...")
+        await message.reply_video(trimmed_path, caption=f"🎬 Random {sample_duration}s sample (from {start_time}s)")
+
+    except Exception as e:
+        await status_msg.edit(f"❌ Error: {e}")
+    finally:
+        # Clean up
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        if os.path.exists(trimmed_path):
+            os.remove(trimmed_path)
+        if 'clip' in locals():
+            clip.close()
 
 
     
