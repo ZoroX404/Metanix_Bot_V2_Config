@@ -29,14 +29,16 @@ from pyrogram import Client, filters
 from pyrogram.types import Message
 from pyrogram.enums import MessageMediaType
 
+import asyncio
+import random
+import os
+import time
+import aiohttp
+from pyrogram import Client, filters
+
+
 @Client.on_message(filters.private & filters.command("sv"))
 async def sample_video_handler(client, message):
-    import asyncio
-    import random
-    import os
-    import time
-    import aiohttp
-
     print(f"Command received: {message.command}")
     
     # Step 1: Check usage
@@ -47,11 +49,11 @@ async def sample_video_handler(client, message):
     
     # Check if duration is provided
     if len(message.command) == 1:  # Only "/sv" without any parameter
-        return await message.reply("❗ Usage: Reply to a video with `/sv <duration-in-seconds>`", parse_mode="markdown")
+        return await message.reply_text("❗ Usage: Reply to a video with `/sv <duration-in-seconds>`", parse_mode="markdown")
         
     # Check if more than one parameter is provided
     if len(message.command) > 2:
-        return await message.reply("❗ Usage: Reply to a video with `/sv <duration-in-seconds>` (only one number)", parse_mode="markdown")
+        return await message.reply_text("❗ Usage: Reply to a video with `/sv <duration-in-seconds>` (only one number)", parse_mode="markdown")
         
     # Step 2: Validate replied message
     if not (replied.video or replied.document):
@@ -66,7 +68,7 @@ async def sample_video_handler(client, message):
         return await message.reply("❌ Duration must be a number.")
         
     # Step 4: Initialize status message
-    status_msg = await message.reply("⏳ Analyzing video...")
+    status_msg = await message.reply_text("⏳ Analyzing video...")
     
     try:
         # Get file info for direct access
@@ -133,7 +135,7 @@ async def sample_video_handler(client, message):
             # Fallback: Download small segment first, then process
             await status_msg.edit("⚠️ Direct processing failed. Using alternative method...")
             
-            file_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
+            file_url = f"https://api.telegram.org/file/bot{client.bot_token}/{file_path}"
             bytes_per_second = 1_000_000  # Rough estimate - 1MB per second
             start_byte = max(0, int((start_time - 5) * bytes_per_second))
             end_byte = int((start_time + sample_duration + 5) * bytes_per_second)
@@ -145,8 +147,9 @@ async def sample_video_handler(client, message):
             async with aiohttp.ClientSession() as session:
                 headers = {"Range": f"bytes={start_byte}-{end_byte}"}
                 async with session.get(file_url, headers=headers) as response:
-                    if response.status == 206:
+                    if response.status == 206:  # Partial Content
                         with open(temp_path, 'wb') as f:
+                            # Properly handle the async generator
                             async for chunk in response.content.iter_chunked(8192):
                                 f.write(chunk)
                     else:
