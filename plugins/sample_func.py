@@ -24,34 +24,29 @@ from pyrogram.types import Message
 from pyrogram.enums import MessageMediaType
 
 @Client.on_message(filters.private & filters.command("sv"))
-async def sample_video_handler(client: Client, message: Message):
+async def sample_video_handler(client, message):
+    # First check if the command has the correct number of arguments
+    if len(message.command) != 2:
+        return await message.reply_text("❗ Usage: Reply to a video with /sv <duration-in-seconds>")
+
     replied = message.reply_to_message
-
-    # Step 1: Check reply exists
     if not replied:
-        return await message.reply("❌ Please reply to a video or video document.")
+        return await message.reply("❌ Please reply to a video message when using this command.")
 
-    # Step 2: Check if it's a video or video document
     if replied.video:
-        media_type = "video"
-    elif replied.document and replied.document.mime_type and replied.document.mime_type.startswith("video"):
-        media_type = "document"
+        media = replied.video
+    elif replied.document:
+        media = replied.document
     else:
-        return await message.reply("❌ This command only works on video or video-type documents.")
+        return await message.reply("❌ This command only works on actual videos or video documents.")
 
-    # Step 3: Parse duration argument
     try:
-        parts = message.text.strip().split(maxsplit=1)
-        if len(parts) != 2:
-            raise ValueError
-        sample_duration = int(parts[1])
+        sample_duration = int(message.command[1])
         if sample_duration <= 0:
-            raise ValueError
+            return await message.reply("❌ Duration must be a positive number.")
     except ValueError:
-        return await message.reply("❗ Usage: Reply to a video with `/sv <duration-in-seconds>`")
+        return await message.reply("❌ Duration must be a number.")
 
-    # Success feedback
-    await message.reply(f"✅ Preparing a {sample_duration}-second sample from the replied {media_type}.")
 
 
     
