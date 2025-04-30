@@ -51,11 +51,17 @@ async def sample_video_handler(client, message):
     except ValueError:
         return await message.reply("❌ Duration must be a number.")
 
-    # Step 4: Download the video
+    # Step 4: Download the video with progress bar
     status_msg = await message.reply("📥 Downloading video...")
 
-    file_path = await client.download_media(replied=file, progress=progress_for_pyrogram, progress_args=("**Download Started.... **", ms, time.time()))
-    
+    # Use progress bar during the download process
+    start_time = time.time()  # Track the start time
+    file_path = await client.download_media(
+        replied,
+        progress=progress_for_pyrogram,
+        progress_args=("**Downloading video...**", status_msg, start_time)  # Arguments for the progress function
+    )
+
     try:
         # Step 5: Check video duration
         clip = VideoFileClip(file_path)
