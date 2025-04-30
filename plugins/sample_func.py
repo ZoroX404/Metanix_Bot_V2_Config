@@ -53,8 +53,8 @@ async def sample_video_handler(client, message):
 
     # Step 4: Download the video
     status_msg = await message.reply("📥 Downloading video...")
-    media = replied.video or replied.document
-    file_path = await client.download_media(media)
+
+    file_path = await client.download_media(replied=file, progress=progress_for_pyrogram, progress_args=("**Download Started.... **", ms, time.time()))
     
     try:
         # Step 5: Check video duration
