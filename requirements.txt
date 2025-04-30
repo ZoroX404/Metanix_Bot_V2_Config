@@ -11,3 +11,4 @@ pyromod
 ffmpeg-python
 ffmpeg
 moviepy
+imageio-ffmpeg
