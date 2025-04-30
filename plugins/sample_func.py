@@ -19,29 +19,40 @@ from config import Config
 
 app = Client("test", api_id=Config.STRING_API_ID, api_hash=Config.STRING_API_HASH, session_string=Config.STRING_SESSION)
 
+from pyrogram import Client, filters
+from pyrogram.types import Message
+from pyrogram.enums import MessageMediaType
+
 @Client.on_message(filters.private & filters.command("sv"))
-async def sample_video_handler(client, message):
+async def sample_video_handler(client: Client, message: Message):
     replied = message.reply_to_message
+
+    # Step 1: Check reply exists
     if not replied:
-        return await message.reply("❌ Please reply to a video message when using this command.")
+        return await message.reply("❌ Please reply to a video or video document.")
 
+    # Step 2: Check if it's a video or video document
     if replied.video:
-        media = replied.video
+        media_type = "video"
     elif replied.document and replied.document.mime_type and replied.document.mime_type.startswith("video"):
-        media = replied.document
+        media_type = "document"
     else:
-        return await message.reply("❌ This command only works on actual videos or video documents.")
+        return await message.reply("❌ This command only works on video or video-type documents.")
 
-    # Split and validate the command argument
+    # Step 3: Parse duration argument
     try:
-        sample_duration = int(message.text.strip().split(' ', 1)[1])
+        parts = message.text.strip().split(maxsplit=1)
+        if len(parts) != 2:
+            raise ValueError
+        sample_duration = int(parts[1])
         if sample_duration <= 0:
             raise ValueError
-    except (IndexError, ValueError):
+    except ValueError:
         return await message.reply("❗ Usage: Reply to a video with `/sv <duration-in-seconds>`")
 
-    # Continue with processing...
-    await message.reply(f"✅ Proceeding with sample duration: {sample_duration}")
+    # Success feedback
+    await message.reply(f"✅ Preparing a {sample_duration}-second sample from the replied {media_type}.")
+
 
     
 
