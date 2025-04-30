@@ -27,7 +27,7 @@ from pyrogram.enums import MessageMediaType
 async def sample_video_handler(client, message):
     # First check if the command has the correct number of arguments
     if len(message.command) != 2:
-        return await message.reply_text("❗ Usage: Reply to a video with /sv <duration-in-seconds>")
+        return await message.reply_text("❗ Usage: Reply to a video with `/sv duration-in-seconds`")
 
     replied = message.reply_to_message
     if not replied:
