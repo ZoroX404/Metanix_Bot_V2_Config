@@ -31,6 +31,12 @@ from pyrogram.enums import MessageMediaType
 
 @Client.on_message(filters.private & filters.command("sv"))
 async def sample_video_handler(client, message):
+    import asyncio
+    import random
+    import os
+    import time
+    import aiohttp
+
     print(f"Command received: {message.command}")
     
     # Step 1: Check usage
@@ -41,11 +47,11 @@ async def sample_video_handler(client, message):
     
     # Check if duration is provided
     if len(message.command) == 1:  # Only "/sv" without any parameter
-        return await message.reply_text("❗ Usage: Reply to a video with `/sv <duration-in-seconds>`", parse_mode="markdown")
+        return await message.reply("❗ Usage: Reply to a video with `/sv <duration-in-seconds>`", parse_mode="markdown")
         
     # Check if more than one parameter is provided
     if len(message.command) > 2:
-        return await message.reply_text("❗ Usage: Reply to a video with `/sv <duration-in-seconds>` (only one number)", parse_mode="markdown")
+        return await message.reply("❗ Usage: Reply to a video with `/sv <duration-in-seconds>` (only one number)", parse_mode="markdown")
         
     # Step 2: Validate replied message
     if not (replied.video or replied.document):
@@ -60,7 +66,7 @@ async def sample_video_handler(client, message):
         return await message.reply("❌ Duration must be a number.")
         
     # Step 4: Initialize status message
-    status_msg = await message.reply_text("⏳ Analyzing video...")
+    status_msg = await message.reply("⏳ Analyzing video...")
     
     try:
         # Get file info for direct access
@@ -69,13 +75,11 @@ async def sample_video_handler(client, message):
         else:  # document
             file_id = replied.document.file_id
             
-        # Get the file location without downloading
         file_info = await client.get_file(file_id)
         file_path = file_info.file_path
         
         # Use ffprobe to get duration without downloading the whole file
-        # This works directly with the Telegram file path
-        probe_cmd = f'ffprobe -v error -select_streams v:0 -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 tg://{file_path}'
+        probe_cmd = f'ffprobe -v error -select_streams v:0 -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "tg://{file_path}"'
         
         process = await asyncio.create_subprocess_shell(
             probe_cmd,
@@ -94,7 +98,6 @@ async def sample_video_handler(client, message):
                 
         except (ValueError, IndexError):
             await status_msg.edit("⚠️ Couldn't determine video duration. Processing anyway...")
-            # Set a default large value
             actual_duration = 3600  # Assume it's an hour long if we can't determine
         
         # Choose random start time
@@ -105,17 +108,12 @@ async def sample_video_handler(client, message):
         
         await status_msg.edit(f"✂️ Extracting {sample_duration}s segment from position {start_time}s...")
         
-        # Create output path
         os.makedirs("downloads", exist_ok=True)
         output_path = f"downloads/sample_{message.from_user.id}_{int(time.time())}_{sample_duration}s.mp4"
         
-        # *** KEY OPTIMIZATION: Stream directly from Telegram API and extract only the needed segment ***
-        # Use FFmpeg's ability to read from stdin and seek efficiently
-        
-        # Command to stream from Telegram and extract segment in one step
-        # This uses HTTP byte range requests under the hood when available
+        # Stream directly from Telegram API and extract only the needed segment
         cmd = (
-            f'ffmpeg -ss {start_time} -i tg://{file_path} '
+            f'ffmpeg -ss {start_time} -i "tg://{file_path}" '
             f'-t {sample_duration} -c:v copy -c:a copy -avoid_negative_ts 1 '
             f'-movflags +faststart "{output_path}" -y'
         )
@@ -128,7 +126,6 @@ async def sample_video_handler(client, message):
         )
         stdout, stderr = await process.communicate()
         
-        # Check if the file was created successfully
         if not os.path.exists(output_path) or os.path.getsize(output_path) == 0:
             print("Failed with direct streaming method. Stderr:")
             print(stderr.decode())
@@ -136,37 +133,27 @@ async def sample_video_handler(client, message):
             # Fallback: Download small segment first, then process
             await status_msg.edit("⚠️ Direct processing failed. Using alternative method...")
             
-            # Get file location for byte range request
             file_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
-            
-            # Calculate byte ranges for the segment we need
-            # This is an approximation - we'll request a bit more than needed to ensure we get our segment
             bytes_per_second = 1_000_000  # Rough estimate - 1MB per second
-            start_byte = max(0, int((start_time - 5) * bytes_per_second))  # Start 5 seconds earlier to be safe
-            end_byte = int((start_time + sample_duration + 5) * bytes_per_second)  # End 5 seconds later to be safe
+            start_byte = max(0, int((start_time - 5) * bytes_per_second))
+            end_byte = int((start_time + sample_duration + 5) * bytes_per_second)
             
-            # Create temp file for the segment
             temp_path = f"downloads/temp_{message.from_user.id}_{int(time.time())}.mp4"
             
-            # Download just the byte range we need
             await status_msg.edit(f"📥 Downloading only the needed segment...")
             
             async with aiohttp.ClientSession() as session:
                 headers = {"Range": f"bytes={start_byte}-{end_byte}"}
                 async with session.get(file_url, headers=headers) as response:
-                    if response.status == 206:  # Partial Content
+                    if response.status == 206:
                         with open(temp_path, 'wb') as f:
-                            while True:
-                                chunk = await response.content.read(8192)
-                                if not chunk:
-                                    break
+                            async for chunk in response.content.iter_chunked(8192):
                                 f.write(chunk)
                     else:
                         raise Exception(f"Failed to get byte range: HTTP {response.status}")
             
-            # Now process the temp file
             cmd = (
-                f'ffmpeg -ss 5 -i "{temp_path}" '  # 5 second offset since we started 5 seconds early
+                f'ffmpeg -ss 5 -i "{temp_path}" '
                 f'-t {sample_duration} -c:v copy -c:a copy '
                 f'-movflags +faststart "{output_path}" -y'
             )
@@ -175,18 +162,15 @@ async def sample_video_handler(client, message):
             process = await asyncio.create_subprocess_shell(cmd)
             await process.communicate()
             
-            # Clean up temp file
             if os.path.exists(temp_path):
                 os.remove(temp_path)
         
-        # Send the trimmed video
         await status_msg.edit("📤 Uploading sample video...")
         await message.reply_video(
             output_path, 
             caption=f"🎬 Random {sample_duration}s sample (starts at {start_time}s)"
         )
         
-        # Clean up
         if os.path.exists(output_path):
             os.remove(output_path)
             
