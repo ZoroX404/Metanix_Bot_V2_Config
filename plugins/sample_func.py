@@ -14,7 +14,7 @@ import asyncio
 import time
 import random
 from pyrogram import Client, filters
-from moviepy.editor import VideoFileClip
+from moviepy import VideoFileClip
 
 from pyrogram.types import Message
 
