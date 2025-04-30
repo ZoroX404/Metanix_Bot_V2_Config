@@ -32,11 +32,13 @@ from pyrogram.enums import MessageMediaType
 @Client.on_message(filters.private & filters.command("sv"))
 async def sample_video_handler(client, message):
     # Step 1: Check usage
+    replied = message.reply_to_message
     if len(message.command) != 2:
+        return await message.reply_text("❗ Usage: Reply to a video with `/sv <duration-in-seconds>`", parse_mode="markdown")
+    if len(replied.command) != 2:
         return await message.reply_text("❗ Usage: Reply to a video with `/sv <duration-in-seconds>`", parse_mode="markdown")
 
     # Step 2: Validate replied message
-    replied = message.reply_to_message
     if not replied:
         return await message.reply("❌ Please reply to a video message when using this command.")
 
@@ -52,16 +54,18 @@ async def sample_video_handler(client, message):
         return await message.reply("❌ Duration must be a number.")
 
     # Step 4: Download the video with progress bar
-    status_msg = await message.reply("📥 Downloading video...")
+    file_path = f"downloads/{new_filename}"
+    file = replied
+    ms = await message.reply_text(text="Trying To Download.....")
 
     # Use progress bar during the download process
-    start_time = time.time()  # Track the start time
-    file_path = await client.download_media(
-        replied,
-        progress=progress_for_pyrogram,
-        progress_args=("**Downloading video...**", status_msg, start_time)  # Arguments for the progress function
-    )
-
+    try:
+        path = await client.download_media(message=file, file_name=file_path,  progress=progress_for_pyrogram, progress_args=("**Download Started.... **", ms, time.time()))
+        print(f"File downloaded to {path}")
+    except Exception as e:
+        print(f"Error downloading media: {e}")
+        return await ms.edit(e)
+        
     try:
         # Step 5: Check video duration
         clip = VideoFileClip(file_path)
