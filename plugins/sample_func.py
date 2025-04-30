@@ -27,18 +27,22 @@ async def sample_video_handler(client, message):
 
     if replied.video:
         media = replied.video
-    elif replied.document:
+    elif replied.document and replied.document.mime_type and replied.document.mime_type.startswith("video"):
         media = replied.document
     else:
         return await message.reply("❌ This command only works on actual videos or video documents.")
 
-    if len(message.command) != 2:
-        return await message.reply_text("❗ Usage: Reply to a video with `/sv <duration-in-seconds>`")
+    # Split and validate the command argument
+    try:
+        sample_duration = int(message.text.strip().split(' ', 1)[1])
+        if sample_duration <= 0:
+            raise ValueError
+    except (IndexError, ValueError):
+        return await message.reply("❗ Usage: Reply to a video with `/sv <duration-in-seconds>`")
 
-    sample_duration = int(message.text.split(' ', 1)[1])
+    # Continue with processing...
+    await message.reply(f"✅ Proceeding with sample duration: {sample_duration}")
 
-    if sample_duration <= 0:
-        return await message.reply("❌ Duration must be a positive number.")
     
 
 
