@@ -45,6 +45,14 @@ import aiohttp
 from pyrogram import Client, filters
 
 
+import asyncio
+import random
+import os
+import time
+import aiohttp
+from pyrogram import Client, filters
+
+
 @Client.on_message(filters.private & filters.command("sv"))
 async def sample_video_handler(client, message):
     print(f"Command received: {message.command}")
@@ -84,8 +92,7 @@ async def sample_video_handler(client, message):
             file_id = replied.video.file_id
         else:  # document
             file_id = replied.document.file_id
-        
-        # Get the file path from Telegram
+            
         file_info = await client.get_file(file_id)
         file_path = file_info.file_path
         
@@ -144,7 +151,7 @@ async def sample_video_handler(client, message):
             # Fallback: Download small segment first, then process
             await status_msg.edit("⚠️ Direct processing failed. Using alternative method...")
             
-            file_url = f"https://api.telegram.org/file/bot{Config.BOT_TOKEN}/{file_path}"
+            file_url = f"https://api.telegram.org/file/bot{client.bot_token}/{file_path}"
             bytes_per_second = 1_000_000  # Rough estimate - 1MB per second
             start_byte = max(0, int((start_time - 5) * bytes_per_second))
             end_byte = int((start_time + sample_duration + 5) * bytes_per_second)
@@ -188,4 +195,4 @@ async def sample_video_handler(client, message):
             
     except Exception as e:
         print(f"Error in processing: {str(e)}")
-        await status_msg.edit(f"❌ Error: {str(e)}")
+        await status_msg.edit("❌ An error occurred while processing your request. Please try again later.")
