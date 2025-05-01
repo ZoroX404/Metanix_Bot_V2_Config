@@ -29,8 +29,8 @@ async def sample_video_handler(client, message):
     # Check if more than one parameter is provided
     if len(message.command) > 2:
         print(f"Too many parameters: {message.command[1:]}")
-        message.reply("❗ Usage: Reply to a video with `/sv <duration-in-seconds>` (only one number)", parse_mode="markdown")
-        return await 
+        await message.reply("❗ Usage: Reply to a video with `/sv <duration-in-seconds>` (only one number)", parse_mode="markdown")
+        return  
         
     # Step 2: Validate replied message
     print(f"Replied message type - video: {replied.video is not None}, document: {replied.document is not None}")
