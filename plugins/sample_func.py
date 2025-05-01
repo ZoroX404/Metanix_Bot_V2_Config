@@ -26,11 +26,11 @@ async def sample_video_handler(client, message):
 
     elif len(message.command) > 2:
         print(f"Too many parameters: {message.command[1:]}")
-        return await message.reply("❗ Usage: Reply to a video with `/sv <duration-in-seconds>` (only one number)", parse_mode="markdown")
+        return await message.reply_text("❗ Usage: Reply to a video with `/sv <duration-in-seconds>` (only one number)", parse_mode="markdown")
 
     elif not (replied.video or replied.document):
         print("Replied message is not a video or document")
-        return await message.reply("❌ This command only works on actual videos or video documents.")
+        return await message.reply_text("❌ This command only works on actual videos or video documents.")
         
     # Step 3: Parse and validate duration
     try:
