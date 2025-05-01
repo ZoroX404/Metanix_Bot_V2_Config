@@ -26,7 +26,10 @@ async def sample_video_handler(client, message):
 
     elif len(message.command) > 2:
         print(f"Too many parameters: {message.command[1:]}")
-        return await message.reply_text("❗ Usage: Reply to a video with `/sv <duration-in-seconds>` (only one number)", parse_mode="markdown")
+        try:
+            return await message.reply_text("❗ Usage: Reply to a video with `/sv <duration-in-seconds>` (only one number)", parse_mode="markdown")
+        except Exception as e:
+            print(f"❌ Failed to send error message: {e}")
 
     elif not (replied.video or replied.document):
         print("Replied message is not a video or document")
