@@ -2,56 +2,14 @@ import random
 import asyncio
 import os
 import time
-import shutil  # Optional cleanup
+import shutil
 from pyrogram import Client, filters
 from pyrogram.enums import MessageMediaType
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ForceReply, Message
-from hachoir.metadata import extractMetadata
-from hachoir.parser import createParser
-from PIL import Image
-import os
-import asyncio
-import time
-import random
-from pyrogram import Client, filters
-from moviepy import VideoFileClip
-
-from pyrogram.types import Message
-
-from helper.utils import progress_for_pyrogram, convert, humanbytes, add_prefix_suffix, add_sprefix_suffix, add_prefix_ssuffix, add_sprefix_ssuffix
+from helper.utils import progress_for_pyrogram, convert, humanbytes
 from helper.ffmpeg import fix_thumb, take_screen_shot
 from helper.database import db
 from config import Config
-
-app = Client("test", api_id=Config.STRING_API_ID, api_hash=Config.STRING_API_HASH, session_string=Config.STRING_SESSION)
-
-from pyrogram import Client, filters
-from pyrogram.types import Message
-from pyrogram.enums import MessageMediaType
-
-import asyncio
-import random
-import os
-import time
-import aiohttp
-from pyrogram import Client, filters
-
-
-import asyncio
-import random
-import os
-import time
-import aiohttp
-from pyrogram import Client, filters
-
-
-import asyncio
-import random
-import os
-import time
-import aiohttp
-from pyrogram import Client, filters
-
 
 @Client.on_message(filters.private & filters.command("sv"))
 async def sample_video_handler(client, message):
@@ -160,12 +118,13 @@ async def sample_video_handler(client, message):
             
             await status_msg.edit(f"📥 Downloading only the needed segment...")
             
+            # Fixed async download code
             async with aiohttp.ClientSession() as session:
                 headers = {"Range": f"bytes={start_byte}-{end_byte}"}
                 async with session.get(file_url, headers=headers) as response:
                     if response.status == 206:  # Partial Content
                         with open(temp_path, 'wb') as f:
-                            # Properly handle the async generator
+                            # Correctly iterate over the async generator
                             async for chunk in response.content.iter_chunked(8192):
                                 f.write(chunk)
                     else:
@@ -195,4 +154,4 @@ async def sample_video_handler(client, message):
             
     except Exception as e:
         print(f"Error in processing: {str(e)}")
-        await status_msg.edit("❌ An error occurred while processing your request. Please try again later.")
+        await status_msg.edit(f"❌ An error occurred: {str(e)}")
