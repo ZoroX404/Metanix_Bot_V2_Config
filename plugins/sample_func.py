@@ -19,22 +19,16 @@ async def sample_video_handler(client, message):
     if not replied:
         print("No replied message found")
         return await message.reply("❌ Please reply to a video message when using this command.")
-    
-    # Check if duration is provided
-    if len(message.command) == 1:  # Only "/sv" without any parameter
+
+    elif len(message.command) == 1:
         print("Command used without parameters")
-        await message.reply("❗ Usage: Reply to a video with `/sv <duration-in-seconds>`", parse_mode="markdown")
-        return 
-        
-    # Check if more than one parameter is provided
-    if len(message.command) > 2:
+        return await message.reply("❗ Usage: Reply to a video with `/sv <duration-in-seconds>`", parse_mode="markdown")
+
+    elif len(message.command) > 2:
         print(f"Too many parameters: {message.command[1:]}")
-        await message.reply("❗ Usage: Reply to a video with `/sv <duration-in-seconds>` (only one number)", parse_mode="markdown")
-        return  
-        
-    # Step 2: Validate replied message
-    print(f"Replied message type - video: {replied.video is not None}, document: {replied.document is not None}")
-    if not (replied.video or replied.document):
+        return await message.reply("❗ Usage: Reply to a video with `/sv <duration-in-seconds>` (only one number)", parse_mode="markdown")
+
+    elif not (replied.video or replied.document):
         print("Replied message is not a video or document")
         return await message.reply("❌ This command only works on actual videos or video documents.")
         
