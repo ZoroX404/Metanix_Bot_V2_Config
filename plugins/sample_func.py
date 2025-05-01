@@ -5,6 +5,11 @@ import time
 import random
 import asyncio
 import aiohttp
+from pyrogram import Client, filters
+from config import Config
+
+
+app = Client("test", api_id=Config.STRING_API_ID, api_hash=Config.STRING_API_HASH, session_string=Config.STRING_SESSION)
 
 @app.on_message(filters.private & filters.command("sv"))
 async def sample_video_handler(client, message: Message):
