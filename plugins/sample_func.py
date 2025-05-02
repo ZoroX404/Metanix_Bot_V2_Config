@@ -29,7 +29,7 @@ async def sample_video_handler(client, message):
         print("Command used without parameters")
         try : 
             msg = "❗ Usage: Reply to a video with `/sv <duration-in-seconds>`"
-            return await message.reply_text(escape_markdown(msg), parse_mode="Markdown")
+            return await message.reply_text(escape_markdown(msg), parse_mode="markdown")
         except Exception as e:
             print(f"{e}")
             
