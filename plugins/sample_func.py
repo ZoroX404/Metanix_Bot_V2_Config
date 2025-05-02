@@ -6,6 +6,8 @@ from pyrogram import Client, filters
 from pyrogram.types import Message
 from moviepy import VideoFileClip  # Correct import
 from helper.utils import progress_for_pyrogram
+import re
+
 
 def escape_markdown(text: str) -> str:
     return re.sub(r'([_*\[\]()~`>#+=|{}.!\\-])', r'\\\1', text)
