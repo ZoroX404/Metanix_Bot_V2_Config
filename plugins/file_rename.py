@@ -220,19 +220,25 @@ async def rename(bot, message):
         caption = f"**{new_filename}**"
         print(f"Default caption: {caption}")
 
-    if media.thumbs or c_thumb:
-        if c_thumb:
-            ph_path = await bot.download_media(c_thumb)
-            width, height, ph_path = await fix_thumb(ph_path)
-            print(f"Custom thumbnail path: {ph_path}")
-        else:
-            try:
-                ph_path_ = await take_screen_shot(file_path, os.path.dirname(os.path.abspath(file_path)), random.randint(0, duration - 1))
-                width, height, ph_path = await fix_thumb(ph_path_)
-                print(f"Generated thumbnail path: {ph_path}")
-            except Exception as e:
-                ph_path = None
-                print(f"Error generating thumbnail: {e}")
+    if c_thumb:
+        # Use custom thumbnail if provided
+        ph_path = await bot.download_media(c_thumb)
+        width, height, ph_path = await fix_thumb(ph_path)
+        print(f"Custom thumbnail path: {ph_path}")
+    elif media.thumbs:
+        # Use the media's own thumbnail if available
+        ph_path = await bot.download_media(media.thumbs[0].file_id)
+        width, height, ph_path = await fix_thumb(ph_path)
+        print(f"Media thumbnail path: {ph_path}")
+    else:
+        # Only generate screenshot if no thumbnails are available
+        try:
+            ph_path_ = await take_screen_shot(file_path, os.path.dirname(os.path.abspath(file_path)), random.randint(0, duration - 1))
+            width, height, ph_path = await fix_thumb(ph_path_)
+            print(f"Generated thumbnail path: {ph_path}")
+        except Exception as e:
+            ph_path = None
+            print(f"Error generating thumbnail: {e}")
 
     upload_type = await db.get_upload_type(message.from_user.id)
     print(f"Upload type: {upload_type}")
