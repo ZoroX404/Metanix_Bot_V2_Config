@@ -115,7 +115,7 @@ async def sample_video_handler(client, message):
         print(f"Uploading trimmed video: {trimmed_path}")
         await message.reply_video(
             trimmed_path, 
-            caption=f"**{sample_duration}s Sample (starts at {formatted_time}s)** of {file_name_2}",
+            caption=f"<b>{sample_duration}s Sample (starts at {formatted_time}s)</b> of <u>{file_name_2}</u>",
             parse_mode=ParseMode.HTML
         )
         print("Upload complete")
