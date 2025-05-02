@@ -8,6 +8,7 @@ from moviepy import VideoFileClip  # Correct import
 from helper.utils import progress_for_pyrogram
 import re
 from datetime import timedelta
+from pyrogram.enums import ParseMode
 
 
 def escape_markdown(text: str) -> str:
@@ -114,8 +115,8 @@ async def sample_video_handler(client, message):
         print(f"Uploading trimmed video: {trimmed_path}")
         await message.reply_video(
             trimmed_path, 
-            caption=(f"{sample_duration}s Sample (starts at {formatted_time}s) 
-            {file_name_2}")
+            caption=f"**{sample_duration}s Sample (starts at {formatted_time}s)** of {file_name_2}",
+            parse_mode=ParseMode.HTML
         )
         print("Upload complete")
         
