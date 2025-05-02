@@ -34,12 +34,12 @@ async def sample_video_handler(client, message):
     elif len(message.command) == 1:
         print("Command used without parameters")
         try:
-            return await message.reply_text("❌ Error : Format should be `/sv (duration-in-seconds)`.", parse_mode=ParseMode.MARKDOWN_V2)
+            return await message.reply_text("❌ Error : Format should be `/sv (duration-in-seconds)`.", parse_mode=ParseMode.MarkdownV2)
         except Exception as e:
             print(f"{e}")
     elif len(message.command) > 2:
         print(f"Too many parameters: {message.command[1:]}")
-        return await message.reply_text("❌ Error : Format should be `/sv (duration-in-seconds)`.", parse_mode=ParseMode.MARKDOWN_V2)
+        return await message.reply_text("❌ Error : Format should be `/sv (duration-in-seconds)`.", parse_mode=ParseMode.MarkdownV2)
 
         
     # Step 3: Parse and validate duration
