@@ -23,7 +23,7 @@ async def sample_video_handler(client, message):
     elif len(message.command) == 1:
         print("Command used without parameters")
         try : 
-            return await message.reply_text("❗ Usage: Reply to a video with format /sv <duration-in-seconds>")
+            return await message.reply_text(f"❗ Usage: Reply to a video with format `/sv <duration-in-seconds>`")
         except Exception as e:
             print(f"{e}")
             
