@@ -29,7 +29,7 @@ async def fix_thumb(thumb):
 
     return width, height, thumb
 
-async def take_screen_shot(video_file, output_directory, ttl, remname_text):
+async def take_screen_shot(video_file, output_directory, ttl):
     out_put_file_name = f"{output_directory}/{time.time()}.jpg"
     file_genertor_command = [
         "ffmpeg",
@@ -50,7 +50,6 @@ async def take_screen_shot(video_file, output_directory, ttl, remname_text):
     e_response = stderr.decode().strip()
     t_response = stdout.decode().strip()
     if os.path.lexists(out_put_file_name):
-        # Remove specified text from the output file name
-        out_put_file_name = remove_text_from_filename(out_put_file_name, remname_text)
+        # Simply return the filename without any modification
         return out_put_file_name
     return None
