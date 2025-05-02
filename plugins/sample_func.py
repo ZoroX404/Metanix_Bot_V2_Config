@@ -18,7 +18,7 @@ def escape_markdown(text: str) -> str:
 async def sample_video_handler(client, message):
     print(f"Command received: {message.command}")
     print(f"Command length: {len(message.command)}")
-    file = getattr(message, message.media.value)
+    
     
     # Step 1: Check usage
     replied = message.reply_to_message
@@ -70,7 +70,7 @@ async def sample_video_handler(client, message):
     print(f"Downloading to: {file_path}")
     
     # Use progress bar during the download process
-    status_msg = await message.reply_text("Trying To Download.....", reply_to_message_id=file.id)
+    status_msg = await message.reply_text("Trying To Download.....", reply_to_message_id=replied.id)
     try:
         path = await client.download_media(
             message=replied,
