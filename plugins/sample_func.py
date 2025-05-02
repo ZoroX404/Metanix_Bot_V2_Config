@@ -7,6 +7,9 @@ from pyrogram.types import Message
 from moviepy import VideoFileClip  # Correct import
 from helper.utils import progress_for_pyrogram
 
+def escape_markdown(text: str) -> str:
+    return re.sub(r'([_*\[\]()~`>#+=|{}.!\\-])', r'\\\1', text)
+
 @Client.on_message(filters.private & filters.command("sv"))
 async def sample_video_handler(client, message):
     print(f"Command received: {message.command}")
