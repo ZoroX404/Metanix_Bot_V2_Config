@@ -18,6 +18,7 @@ def escape_markdown(text: str) -> str:
 async def sample_video_handler(client, message):
     print(f"Command received: {message.command}")
     print(f"Command length: {len(message.command)}")
+    file = getattr(message, message.media.value)
     
     # Step 1: Check usage
     replied = message.reply_to_message
@@ -34,12 +35,12 @@ async def sample_video_handler(client, message):
     elif len(message.command) == 1:
         print("Command used without parameters")
         try:
-            return await message.reply_text("❌ Error : Format should be <code>/sv (duration-in-seconds)</code>.", parse_mode=ParseMode.HTML)
+            return await message.reply_text("❌ Error : Format should be /sv (duration-in-seconds).")
         except Exception as e:
             print(f"{e}")
     elif len(message.command) > 2:
         print(f"Too many parameters: {message.command[1:]}")
-        return await message.reply_text("❌ Error : Format should be <code>/sv (duration-in-seconds)<code>.", parse_mode=ParseMode.HTML)
+        return await message.reply_text("❌ Error : Format should be /sv (duration-in-seconds).")
 
         
     # Step 3: Parse and validate duration
@@ -69,13 +70,13 @@ async def sample_video_handler(client, message):
     print(f"Downloading to: {file_path}")
     
     # Use progress bar during the download process
-    status_msg = await message.reply_text("Trying to download...")
+    status_msg = await message.reply_text("Trying To Download.....", reply_to_message_id=file.id)
     try:
         path = await client.download_media(
             message=replied,
             file_name=file_path,
             progress=progress_for_pyrogram, 
-            progress_args=("**Download Started... **", status_msg, time.time())
+            progress_args=("**Analyzing Started... **", status_msg, time.time())
         )
         print(f"File downloaded to {path}")
     except Exception as e:
@@ -113,13 +114,14 @@ async def sample_video_handler(client, message):
         print("FFmpeg processing complete")
         
         # Step 7: Send trimmed video
-        await status_msg.edit("📤 Uploading sample video...")
+        await status_msg.edit("Trying to Upload Sample....")
         print(f"Uploading trimmed video: {trimmed_path}")
         await message.reply_video(
             trimmed_path, 
             caption=f"<b>{sample_duration}s Sample (starts at {formatted_time}s)</b> of <u>{file_name_2}</u>",
             parse_mode=ParseMode.HTML
         )
+        await status_msg.delete()
         print("Upload complete")
         
     except Exception as e:
