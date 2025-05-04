@@ -46,6 +46,9 @@ async def rename(bot, message):
     print("Function called")
     file = getattr(message, message.media.value)
     filename = file.file_name  
+    msg_key = f"{message.from_user.id}_{message.message_id}"
+    UPLOAD_CANCEL[msg_key] = False
+
     if file.file_size > 2000 * 1024 * 1024:
          return await message.reply_text("⚠️ Sorry Bro This Bot Doesn't Support Uploading Files Bigger Than 2GB")
 
