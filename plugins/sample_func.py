@@ -7,7 +7,7 @@ from pyrogram.types import Message
 from moviepy import VideoFileClip  # Correct import
 from helper.utils import progress_for_pyrogram
 import re
-from datetime import timedelta
+from datetime import timedelta, datetime
 from pyrogram.enums import ParseMode
 
 
@@ -141,7 +141,6 @@ async def sample_video_handler(client, message):
             print("Closed video clip object")
 
 
-from datetime import datetime
 
 def parse_time(t: str) -> int:
     """Convert HH:MM:SS or seconds string to integer seconds."""
