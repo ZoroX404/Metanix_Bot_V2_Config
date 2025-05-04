@@ -87,9 +87,10 @@ async def trim_video_handler(client, message):
         process = await asyncio.create_subprocess_shell(cmd)
         await process.communicate()
 
-        if ":" not in start_input:
-            start_input = formatted_time = str(timedelta(seconds=start_input))
-            end_input = formatted_time = str(timedelta(seconds=end_input))
+        if ":" not in message.command[1]:
+            start_input = str(timedelta(seconds=start_time))
+        if ":" not in message.command[2]:
+            end_input = str(timedelta(seconds=end_time))
     
         
         await status_msg.edit("Uploading trimmed video...")
