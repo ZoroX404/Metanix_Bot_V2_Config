@@ -9,7 +9,6 @@ from time import sleep
 
 @Client.on_message(filters.private & filters.command("start"))
 async def start(client, message):
-
     if message.from_user.id in Config.BANNED_USERS:
         await message.reply_text("Sorry, You are banned.")
         return
@@ -26,13 +25,11 @@ async def start(client, message):
         await message.reply_text(text=Txt.START_TXT.format(user.mention), reply_markup=button, disable_web_page_preview=True)
 
 
-
 AUTO_ON = [[InlineKeyboardButton('Auto Rename On ✅', callback_data='auto_0')], [
     InlineKeyboardButton('Close', callback_data='close')]]
 
 AUTO_OFF = [[InlineKeyboardButton('Auto Rename Off ❌', callback_data='auto_1')], [
     InlineKeyboardButton('Close', callback_data='close')]]
-
 
 
 DOC = InlineKeyboardMarkup([
@@ -49,12 +46,14 @@ VID = InlineKeyboardMarkup([
 
 CLS = InlineKeyboardMarkup(
     [[InlineKeyboardButton("Close", callback_data="close")]]
-    )
+)
 
 @Client.on_callback_query()
 async def cb_handler(client, query: CallbackQuery):
     data = query.data
     user_id = query.from_user.id
+    print(f"Callback query received: data={data}, user_id={user_id}")
+    
     if data == "start":
         await query.message.edit_text(
             text=Txt.START_TXT.format(query.from_user.mention),
@@ -82,8 +81,6 @@ async def cb_handler(client, query: CallbackQuery):
                 InlineKeyboardButton("⟪ Bᴀᴄᴋ", callback_data="start")
             ]])
         )
-
-
     elif data == "upload_document_on":
         await db.set_upload_type(user_id, "document")
         await query.message.edit_text(text="Your current upload format : **Document**.", disable_web_page_preview=True, reply_markup=DOC)
@@ -95,68 +92,33 @@ async def cb_handler(client, query: CallbackQuery):
         print(f"Set upload type to Video for user_id={user_id}")
 
     elif data == "auto_1":
-        await db.set_auto(user_id, True)
-        await query.message.edit_text(text="**Auto Rename Status :**", disable_web_page_preview=True, reply_markup=AUTO_ON)
-        print(f"Set set on for user_id={user_id}")
+        try:
+            await db.set_auto(user_id, True)
+            await query.message.edit_text(text="**Auto Rename Status :**", disable_web_page_preview=True, reply_markup=AUTO_ON)
+            print(f"Set auto ON for user_id={user_id}")
+        except Exception as e:
+            print(f"Error setting auto ON: {e}")
         
     elif data == "auto_0":
-        await db.set_auto(user_id, False)
-        await query.message.edit_text(text="**Auto Rename Status :**", disable_web_page_preview=True, reply_markup=AUTO_OFF)
-        print(f"Set auto off for user_id={user_id}")
-    
-
+        try:
+            await db.set_auto(user_id, False)
+            await query.message.edit_text(text="**Auto Rename Status :**", disable_web_page_preview=True, reply_markup=AUTO_OFF)
+            print(f"Set auto OFF for user_id={user_id}")
+        except Exception as e:
+            print(f"Error setting auto OFF: {e}")
     
     elif data == "close":
         try:
             await query.message.delete()
-            await query.message.reply_to_message.delete()
-#            await query.message.continue_propagation()
-        except:
+            if query.message.reply_to_message:
+                await query.message.reply_to_message.delete()
+        except Exception as e:
+            print(f"Error closing message: {e}")
             await query.message.delete()
-#            await query.message.continue_propagation()
-
-
-
-from pyrogram import Client, filters
-from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
-from helper.database import db
-
-
-#    print(f"Current upload type for user_id={message.from_user.id} is {upload_type}")
-#    await ms.delete()
-    
-
-
-    
-# Handle callback queries
-# @Client.on_callback_query()
-# async def handle_callback_query(client, query: CallbackQuery):
-#     data = query.data
-#     user_id = query.from_user.id
-#     print(f"Callback query received: data={data}, user_id={user_id}")
-
-#     try:
-#         if data == "upload_document_on":
-#             await db.set_upload_type(user_id, "document")
-#             await query.message.edit_text(text="Your current upload format : **Document**.", disable_web_page_preview=True, reply_markup=DOC)
-#             print(f"Set upload type to Document for user_id={user_id}")
-        
-#         elif data == "upload_video_on":
-#             await db.set_upload_type(user_id, "video")
-#             await query.message.edit_text(text="Your current upload format : **Video**.", disable_web_page_preview=True, reply_markup=VID)
-#             print(f"Set upload type to Video for user_id={user_id}")
-        
-#         elif data == "close":
-#             await query.message.delete()
-#             print(f"Closed message for user_id={user_id}")
-#     except Exception as e:
-#         print(f"Error handling callback query for user_id={user_id}: {e}")
-
 
 
 @Client.on_message(filters.private & filters.command('upload'))
-async def handle_id_command(client, message):
-
+async def handle_upload_command(client, message):
     if message.from_user.id not in Config.ADMIN:
         await message.reply_text("**Access Denied** ⚠️ \nError: You are not authorized to use my features")
         return
@@ -164,7 +126,6 @@ async def handle_id_command(client, message):
     ms = await message.reply_text("**Please Wait...**", reply_to_message_id=message.id)
     upload_type = await db.get_upload_type(message.from_user.id)
     await ms.delete()
-
 
     if upload_type == "document":
         await message.reply_text(f"Your current upload format : **Document**.", reply_markup=DOC)
@@ -175,7 +136,6 @@ async def handle_id_command(client, message):
         
 @Client.on_message(filters.private & filters.command('imp_notes'))
 async def imp(client, message):
-    
     if message.from_user.id not in Config.ADMIN:
         await message.reply_text("**Access Denied** ⚠️ \nError: You are not authorized to use my features")
         return
@@ -191,23 +151,31 @@ async def handle_document_command(client, message):
     print(f"[LOG] Set upload type to Document for user_id={user_id}")
 
 
+@Client.on_message(filters.private & filters.command('video'))
+async def handle_video_command(client, message):
+    user_id = message.from_user.id
+    await db.set_upload_type(user_id, "video")
+    await message.reply_text("✅ Your upload format is now set to **Video**.")
+    print(f"[LOG] Set upload type to Video for user_id={user_id}")
+
 
 @Client.on_message(filters.private & filters.command('auto'))
-async def handle_id_command(client, message):
-
+async def handle_auto_command(client, message):
     if message.from_user.id not in Config.ADMIN:
         await message.reply_text("**Access Denied** ⚠️ \nError: You are not authorized to use my features")
         return
     
-    ms = await message.reply_text("**Please Wait...**", reply_to_message_id=message.id)
-    auto_type = await db.get_auto(message.from_user.id)
-    await ms.delete()
+    try:
+        ms = await message.reply_text("**Please Wait...**", reply_to_message_id=message.id)
+        auto_type = await db.get_auto(message.from_user.id)
+        await ms.delete()
 
-
-    if auto_type == True:
-        await message.reply_text(f"**Auto Rename Status :**", reply_markup=AUTO_ON)
-        print(f"Reply sent: auto on for user_id={message.from_user.id}")
-    elif auto_type == False:
-        await message.reply_text(f"**Auto Rename Status :**", reply_markup=AUTO_OFF)
-        print(f"Reply sent: auto off for user_id={message.from_user.id}")
-
+        if auto_type == True:
+            await message.reply_text(f"**Auto Rename Status :**", reply_markup=AUTO_ON)
+            print(f"Reply sent: auto ON for user_id={message.from_user.id}")
+        else:
+            await message.reply_text(f"**Auto Rename Status :**", reply_markup=AUTO_OFF)
+            print(f"Reply sent: auto OFF for user_id={message.from_user.id}")
+    except Exception as e:
+        await message.reply_text(f"Error fetching auto status: {e}")
+        print(f"Error in handle_auto_command: {e}")
