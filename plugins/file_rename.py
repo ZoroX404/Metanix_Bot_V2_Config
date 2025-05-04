@@ -48,7 +48,7 @@ async def rename(bot, message):
     filename = file.file_name
     print("file called")
     try:
-        msg_key = f"{message.chat.id}_{file.id}"
+        msg_key = f"{message.chat.id}_{message.id}"
         UPLOAD_CANCEL[msg_key] = False
     except Exception as e:
         print(f"{e}")
