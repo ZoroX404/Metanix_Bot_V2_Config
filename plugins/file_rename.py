@@ -183,7 +183,7 @@ async def rename(bot, message):
     ms = await message.reply_text(text="Trying To Download.....",  reply_to_message_id=file.id)
 
     try:
-        path = await bot.download_media(message=file, file_name=file_path,  progress=progress_for_pyrogram, progress_args=("**Download Started.... **", ms, time.time()))
+        path = await bot.download_media(message=file, file_name=file_path,  progress=progress_for_pyrogram, progress_args=("**Download Started.... **", ms, time.time(), msg_key))
         print(f"File downloaded to {path}")
         if UPLOAD_CANCEL.get(msg_key):
             if os.path.exists(path):
@@ -282,8 +282,14 @@ async def rename(bot, message):
                     thumb=ph_path,
                     caption=caption,
                     progress=progress_for_pyrogram,
-                    progress_args=("**Upload Started....**", ms, time.time())
+                    progress_args=("**Upload Started....**", ms, time.time(), msg_key)
                 )
+
+                if UPLOAD_CANCEL.get(msg_key):
+                    if os.path.exists(path):
+                    os.remove(path)
+                return
+            
                 from_chat = filw.chat.id
                 mg_id = filw.id
                 time.sleep(2)
@@ -291,6 +297,7 @@ async def rename(bot, message):
                 await ms.delete()
                 await bot.delete_messages(from_chat, mg_id)
                 print("Document uploaded")
+                
             elif upload_type == "video":
                 filw = await app.send_video(
                     message.chat.id,
@@ -301,8 +308,13 @@ async def rename(bot, message):
                     height=height,
                     duration=duration,
                     progress=progress_for_pyrogram,
-                    progress_args=("**Upload Started....**", ms, time.time())
+                    progress_args=("**Upload Started....**", ms, time.time() ,msg_key)
                 )
+                if UPLOAD_CANCEL.get(msg_key):
+                    if os.path.exists(path):
+                    os.remove(path)
+                return
+                
                 from_chat = filw.chat.id
                 mg_id = filw.id
                 time.sleep(2)
@@ -329,8 +341,13 @@ async def rename(bot, message):
                     thumb=ph_path,
                     caption=caption,
                     progress=progress_for_pyrogram,
-                    progress_args=("**Upload Started....**", ms, time.time())
+                    progress_args=("**Upload Started....**", ms, time.time(), msg_key)
                 )
+                if UPLOAD_CANCEL.get(msg_key):
+                    if os.path.exists(path):
+                    os.remove(path)
+                return
+                
                 print("Document uploaded")
             elif upload_type == "video":
                 await bot.send_video(
@@ -342,8 +359,13 @@ async def rename(bot, message):
                     height=height,
                     duration=duration,
                     progress=progress_for_pyrogram,
-                    progress_args=("**Upload Started....**", ms, time.time())
+                    progress_args=("**Upload Started....**", ms, time.time(), msg_key)
                 )
+                if UPLOAD_CANCEL.get(msg_key):
+                    if os.path.exists(path):
+                    os.remove(path)
+                return
+                
                 print("Video uploaded")
         except Exception as e:
             print(f"Upload error: {e}")
