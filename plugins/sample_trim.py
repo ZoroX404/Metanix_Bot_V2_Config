@@ -221,7 +221,7 @@ async def trim_video_handler(client, message):
         await status_msg.edit("Uploading trimmed video...")
         await message.reply_video(
             trimmed_path, 
-            caption=f"<b>Trimmed from {start_input} to {end_input}</b> of <u>{file_name_2}</u>",
+            caption=f"<b>Trimmed Segment ({start_input} → {end_input})</b> of <u>{file_name_2}</u> ",
             parse_mode=ParseMode.HTML
         )
         await status_msg.delete()
