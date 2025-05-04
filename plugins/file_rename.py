@@ -31,6 +31,7 @@ async def rename(bot, message):
             await warning.delete()
         except Exception as e:
             print(f"Failed to delete warning message: {e}")
+        return
         
     print("Function called")
     file = getattr(message, message.media.value)
