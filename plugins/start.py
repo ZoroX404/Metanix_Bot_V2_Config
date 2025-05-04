@@ -25,10 +25,10 @@ async def start(client, message):
         await message.reply_text(text=Txt.START_TXT.format(user.mention), reply_markup=button, disable_web_page_preview=True)
 
 
-AUTO_ON = InlineKeyboardMarkup([[InlineKeyboardButton('Auto Rename On ✅', callback_data='auto_0')], [
+AUTO_ON = InlineKeyboardMarkup([[InlineKeyboardButton('ON ✅', callback_data='auto_0')], [
     InlineKeyboardButton('Close', callback_data='close')]])
 
-AUTO_OFF = InlineKeyboardMarkup([[InlineKeyboardButton('Auto Rename Off ❌', callback_data='auto_1')], [
+AUTO_OFF = InlineKeyboardMarkup([[InlineKeyboardButton('OFF ❌', callback_data='auto_1')], [
     InlineKeyboardButton('Close', callback_data='close')]])
 
 
