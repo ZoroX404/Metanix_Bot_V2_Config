@@ -2,7 +2,7 @@ import math
 import time
 from datetime import datetime
 from pytz import timezone
-from config import Config, Txt
+from config import Config, Txt, UPLOAD_CANCEL
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import re
 
@@ -42,6 +42,12 @@ async def progress_for_pyrogram(current, total, ud_type, message, start):
 #            await message.edit(text=f"{ud_type}\n\n{tmp}")
 #        except:
 #            pass
+    if UPLOAD_CANCEL.get(msg_id):
+        try:
+            await message.delete()
+        except:
+            pass
+        raise Exception("Cancelled by user")
 
 
 def generate_progress_bar(percentage):
