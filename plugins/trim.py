@@ -38,7 +38,7 @@ async def trim_video_handler(client, message):
         return await message.reply_text("❌ Only works on video or video document messages.")
 
     if len(message.command) != 3:
-        return await message.reply_text("❌ Usage: /trim start end\n- Example: `/trim 01:45:06 01:45:56` or `/trim 400 500`", parse_mode=ParseMode.MARKDOWN)
+        return await message.reply_text("❌ Usage: /trim start end\n**Example:** `/trim 01:45:06 01:45:56` or `/trim 400 500`", parse_mode=ParseMode.MARKDOWN)
 
     # Parse time range
     start_input, end_input = message.command[1], message.command[2]
@@ -46,7 +46,7 @@ async def trim_video_handler(client, message):
     end_time = parse_time(end_input)
 
     if start_time < 0 or end_time < 0:
-        return await message.reply_text("❌ Invalid time format. Use `HH:MM:SS` or just seconds.", parse_mode=ParseMode.MARKDOWN)
+        return await message.reply_text("❌ Invalid time format.\n**Example:** `/trim 01:45:06 01:45:56` or `/trim 400 500`.", parse_mode=ParseMode.MARKDOWN)
 
     if start_time >= end_time:
         return await message.reply_text("❌ End time must be greater than start time.")
@@ -87,6 +87,11 @@ async def trim_video_handler(client, message):
         process = await asyncio.create_subprocess_shell(cmd)
         await process.communicate()
 
+        if ":" in start_input
+            start_input = formatted_time = str(timedelta(seconds=start_input))
+            end_input = formatted_time = str(timedelta(seconds=end_input))
+    
+        
         await status_msg.edit("Uploading trimmed video...")
         await message.reply_video(
             trimmed_path, 
