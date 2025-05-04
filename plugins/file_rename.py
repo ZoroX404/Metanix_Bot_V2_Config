@@ -18,13 +18,13 @@ app = Client("test", api_id=Config.STRING_API_ID, api_hash=Config.STRING_API_HAS
 
 from pyrogram.types import CallbackQuery
 
-@Client.on_callback_query(filters.regex("cancel"))
-async def cancel_callback(bot, query: CallbackQuery):
-    try:
-        await query.answer("Cancelled ❌", show_alert=False)
-        await query.message.delete()
-    except Exception as e:
-        print(f"Cancel error: {e}")
+# @Client.on_callback_query(filters.regex("cancel"))
+# async def cancel_callback(bot, query: CallbackQuery):
+#     try:
+#         await query.answer("Cancelled ❌", show_alert=False)
+#         await query.message.delete()
+#     except Exception as e:
+#         print(f"Cancel error: {e}")
 
 
 # Define the callback for the 'upload' buttons
@@ -182,6 +182,10 @@ async def rename(bot, message):
     try:
         path = await bot.download_media(message=file, file_name=file_path,  progress=progress_for_pyrogram, progress_args=("**Download Started.... **", ms, time.time()))
         print(f"File downloaded to {path}")
+        if UPLOAD_CANCEL.get(msg_key):
+            if os.path.exists(path):
+                os.remove(path)
+            return
     except Exception as e:
         print(f"Error downloading media: {e}")
         return await ms.edit(e)
