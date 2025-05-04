@@ -87,7 +87,7 @@ async def trim_video_handler(client, message):
         process = await asyncio.create_subprocess_shell(cmd)
         await process.communicate()
 
-        if ":" in start_input
+        if ":" in start_input:
             start_input = formatted_time = str(timedelta(seconds=start_input))
             end_input = formatted_time = str(timedelta(seconds=end_input))
     
