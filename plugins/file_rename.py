@@ -287,7 +287,7 @@ async def rename(bot, message):
 
                 if UPLOAD_CANCEL.get(msg_key):
                     if os.path.exists(path):
-                    os.remove(path)
+                        os.remove(path)
                 return
             
                 from_chat = filw.chat.id
@@ -312,7 +312,7 @@ async def rename(bot, message):
                 )
                 if UPLOAD_CANCEL.get(msg_key):
                     if os.path.exists(path):
-                    os.remove(path)
+                        os.remove(path)
                 return
                 
                 from_chat = filw.chat.id
@@ -345,7 +345,7 @@ async def rename(bot, message):
                 )
                 if UPLOAD_CANCEL.get(msg_key):
                     if os.path.exists(path):
-                    os.remove(path)
+                        os.remove(path)
                 return
                 
                 print("Document uploaded")
@@ -363,7 +363,7 @@ async def rename(bot, message):
                 )
                 if UPLOAD_CANCEL.get(msg_key):
                     if os.path.exists(path):
-                    os.remove(path)
+                        os.remove(path)
                 return
                 
                 print("Video uploaded")
