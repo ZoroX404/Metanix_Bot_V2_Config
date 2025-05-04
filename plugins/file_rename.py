@@ -20,11 +20,23 @@ app = Client("test", api_id=Config.STRING_API_ID, api_hash=Config.STRING_API_HAS
 # Define the callback for the 'upload' buttons
 @Client.on_message(filters.private & (filters.document | filters.audio | filters.video) & filters.user(Config.ADMIN))
 async def rename(bot, message):
+    
+    auto_type = await db.get_auto(message.from_user.id)
+    if auto_type == False:
+        warning = await message.reply_text("⚠️ Your Auto Rename Status is OFF use /auto if you want to Turn it ON")
+        await asyncio.sleep(10)
+        
+        # Delete the warning message
+        try:
+            await warning.delete()
+        except Exception as e:
+            print(f"Failed to delete warning message: {e}")
+        
     print("Function called")
     file = getattr(message, message.media.value)
     filename = file.file_name  
     if file.file_size > 2000 * 1024 * 1024:
-         return await message.reply_text("Sorry Bro This Bot Doesn't Support Uploading Files Bigger Than 2GB")
+         return await message.reply_text("⚠️ Sorry Bro This Bot Doesn't Support Uploading Files Bigger Than 2GB")
 
 
 #    if message.document:
