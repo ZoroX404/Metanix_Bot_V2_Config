@@ -49,3 +49,13 @@ broadcast - Send Message To All Users (Admin Only)
 
 ##CREATED BY 
 - ** AJ **
+
+
+CMD LOCAL HOST
+```
+rmdir /s /q Metanix_Bot_V2_Config
+git clone https://github.com/ZoroX404/Metanix_Bot_V2_Config
+cd Metanix_Bot_V2_Config
+pip install -r requirements.txt
+python bot.py
+```
