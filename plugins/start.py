@@ -26,6 +26,15 @@ async def start(client, message):
         await message.reply_text(text=Txt.START_TXT.format(user.mention), reply_markup=button, disable_web_page_preview=True)
 
 
+
+AUTO_ON = [[InlineKeyboardButton('Auto Rename On ✅', callback_data='auto_0')], [
+    InlineKeyboardButton('Close', callback_data='close')]]
+
+AUTO_OFF = [[InlineKeyboardButton('Auto Rename Off ❌', callback_data='auto_1')], [
+    InlineKeyboardButton('Close', callback_data='close')]]
+
+
+
 DOC = InlineKeyboardMarkup([
     [InlineKeyboardButton("Document ✅", callback_data="upload_document_on"), 
      InlineKeyboardButton("Video", callback_data="upload_video_on")],  
@@ -85,6 +94,16 @@ async def cb_handler(client, query: CallbackQuery):
         await query.message.edit_text(text="Your current upload format : **Video**.", disable_web_page_preview=True, reply_markup=VID)
         print(f"Set upload type to Video for user_id={user_id}")
 
+    elif data == "auto_1":
+        await db.set_auto(user_id, True)
+        await query.message.edit_text(text="**Auto Rename Status :**", disable_web_page_preview=True, reply_markup=AUTO_ON)
+        print(f"Set set on for user_id={user_id}")
+        
+    elif data == "auto_0":
+        await db.set_auto(user_id, False)
+        await query.message.edit_text(text="**Auto Rename Status :**", disable_web_page_preview=True, reply_markup=AUTO_OFF)
+        print(f"Set auto off for user_id={user_id}")
+    
 
     
     elif data == "close":
@@ -163,9 +182,32 @@ async def imp(client, message):
         
     await message.reply_text("If Prefix/Suffix or both don't existed and you are\nadding yours Prefix/Suffix then use space in it\n\nspace = '-s'\nSet Prefix = {prefix}-s\nSet Suffix = -s{suffix}\n\nIf you are removing existed Prefix/Suffix by using Remname and\nAdding your Prefix/Suffix  then don't use space in it\n\nspace = '-s'\nSet Prefix = {prefix}\nSet Suffix = {suffix}", reply_markup=CLS)
 
+
 @Client.on_message(filters.private & filters.command('document'))
 async def handle_document_command(client, message):
     user_id = message.from_user.id
     await db.set_upload_type(user_id, "document")
     await message.reply_text("✅ Your upload format is now set to **Document**.")
     print(f"[LOG] Set upload type to Document for user_id={user_id}")
+
+
+
+@Client.on_message(filters.private & filters.command('auto'))
+async def handle_id_command(client, message):
+
+    if message.from_user.id not in Config.ADMIN:
+        await message.reply_text("**Access Denied** ⚠️ \nError: You are not authorized to use my features")
+        return
+    
+    ms = await message.reply_text("**Please Wait...**", reply_to_message_id=message.id)
+    auto_type = await db.get_auto(message.from_user.id)
+    await ms.delete()
+
+
+    if auto_type == True:
+        await message.reply_text(f"**Auto Rename Status :**", reply_markup=AUTO_ON)
+        print(f"Reply sent: auto on for user_id={message.from_user.id}")
+    elif auto_type == False:
+        await message.reply_text(f"**Auto Rename Status :**", reply_markup=AUTO_OFF)
+        print(f"Reply sent: auto off for user_id={message.from_user.id}")
+
