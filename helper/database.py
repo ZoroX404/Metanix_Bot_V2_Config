@@ -19,7 +19,7 @@ class Database:
             metadata_code=""" -map 0 -c:s copy -c:a copy -c:v copy -metadata title="Created By:- 𝘈𝘑" -metadata author="𝘈𝘑" -metadata:s:s title="Subtitled By :- @MetaNiXbot" -metadata:s:a title="By :- @MetaNiXbot" -metadata:s:v title="By:- 𝘈𝘑" """,
             remname=None,
             upload_type="document",  # Add a new field for upload type setting
-            auto=True,
+            auto_type=True,
         )
 
     async def add_user(self, b, m):
@@ -101,19 +101,19 @@ class Database:
         
     async def get_upload_type(self, id):
         user = await self.col.find_one({'_id': int(id)})
-        return user.get('upload_type', None)
+        return user.get('upload_type', "document")
         
     async def delete_upload_type(self, id):
         await self.col.update_one({'_id': int(id)}, {'$unset': {'upload_type': ""}})
 
-    async def set_auto(self, id, upload_type):
-        await self.col.update_one({'_id': int(id)}, {'$set': {'upload_type': upload_type}})
+    async def set_auto(self, id, auto_type):
+        await self.col.update_one({'_id': int(id)}, {'$set': {'auto_type': auto_type}})
         
     async def get_auto(self, id):
         user = await self.col.find_one({'_id': int(id)})
-        return user.get('upload_type', None)
+        return user.get('auto_type', True)
         
     async def delete_auto(self, id):
-        await self.col.update_one({'_id': int(id)}, {'$unset': {'upload_type': ""}})
+        await self.col.update_one({'_id': int(id)}, {'$unset': {'auto_type': ""}})
 
 db = Database(Config.DB_URL, Config.DB_NAME)
