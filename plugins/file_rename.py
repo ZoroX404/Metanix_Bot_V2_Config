@@ -47,7 +47,7 @@ async def rename(bot, message):
     file = getattr(message, message.media.value)
     filename = file.file_name
     print("file called")
-    msg_key = f"{message.from_user.id}_{message.message_id}"
+    msg_key = f"{message.chat.id}_{file.id}"
     UPLOAD_CANCEL[msg_key] = False
     print("upload called")
     if file.file_size > 2000 * 1024 * 1024:
