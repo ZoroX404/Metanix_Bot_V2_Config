@@ -42,7 +42,7 @@ async def rename(bot, message):
         except Exception as e:
             print(f"Failed to delete warning message: {e}")
         return
-        
+    return   
     print("Function called")
     file = getattr(message, message.media.value)
     filename = file.file_name
@@ -54,7 +54,7 @@ async def rename(bot, message):
         print("file called")
     except Exception as e:
         print(f"{e}")
-    return
+    
     print("upload called")
     if file.file_size > 2000 * 1024 * 1024:
          return await message.reply_text("⚠️ Sorry Bro This Bot Doesn't Support Uploading Files Bigger Than 2GB")
