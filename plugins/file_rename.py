@@ -42,7 +42,7 @@ async def rename(bot, message):
         except Exception as e:
             print(f"Failed to delete warning message: {e}")
         return
-    return   
+
     print("Function called")
     file = getattr(message, message.media.value)
     filename = file.file_name
