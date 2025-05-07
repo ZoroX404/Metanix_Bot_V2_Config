@@ -13,6 +13,7 @@ from helper.utils import progress_for_pyrogram, convert, humanbytes, add_prefix_
 from helper.ffmpeg import fix_thumb, take_screen_shot
 from helper.database import db
 from config import Config
+from pyrogram.types import CallbackQuery
 
 app = Client("test", api_id=Config.STRING_API_ID, api_hash=Config.STRING_API_HASH, session_string=Config.STRING_SESSION)
 
