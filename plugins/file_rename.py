@@ -184,7 +184,7 @@ async def rename(bot, message):
     msg_key = f"{message.chat.id}_{ms.id}"
     UPLOAD_CANCEL[msg_key] = False
     try:
-        path = await bot.download_media(message=file, file_name=file_path,  progress=progress_for_pyrogram, progress_args=("**Download Started.... **", ms, time.time(), msg_key))
+        path = await bot.download_media(message=file, file_name=file_path,  progress=progress_for_pyrogram, progress_args=("**Download Started.... **", ms, time.time()))
         print(f"File downloaded to {path}")
         if UPLOAD_CANCEL.get(msg_key):
             if os.path.exists(file_path):
