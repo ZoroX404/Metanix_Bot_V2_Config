@@ -5,6 +5,7 @@ import time
 id_pattern = re.compile(r'^.\d+$')
 
 UPLOAD_CANCEL = {}
+FILE_NAME = {}
 
 class Config(object):
     # pyro client config
