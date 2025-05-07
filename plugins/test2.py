@@ -2,8 +2,7 @@ import subprocess
 import logging
 from pyrogram import Client, filters
 from pyrogram.types import Message
-import Config from config 
-
+from config import Config
 log = logging.getLogger(__name__)
 
 BOT_TOKEN = Config.BOT_TOKEN 
