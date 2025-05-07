@@ -38,8 +38,8 @@ async def progress_for_pyrogram(current, total, ud_type, message, start):
         except Exception:
             pass
             
-        if UPLOAD_CANCEL.get(msg_key):
-            raise Exception("Cancelled by user")
+        # if UPLOAD_CANCEL.get(msg_key):
+        #     raise Exception("Cancelled by user")
 
 #        try:
 #            await message.edit(text=f"{ud_type}\n\n{tmp}")
