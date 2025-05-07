@@ -28,7 +28,10 @@ async def cancel_callback(bot, query: CallbackQuery):
         UPLOAD_CANCEL[msg_key] = True
         await query.answer("Cancelled ❌", show_alert=False)
         await query.message.delete()
-        cancel_msg = await query.message.chat.send_message("Cancelled ❌")
+        cancel_msg = await bot.send_message(
+            chat_id=query.message.chat.id,
+            text="Cancelled ❌"
+        )
         await asyncio.sleep(10)
         await cancel_msg.delete()
     except Exception as e:
