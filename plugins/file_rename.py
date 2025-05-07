@@ -12,14 +12,18 @@ from PIL import Image
 from helper.utils import progress_for_pyrogram, convert, humanbytes, add_prefix_suffix, add_sprefix_suffix, add_prefix_ssuffix, add_sprefix_ssuffix
 from helper.ffmpeg import fix_thumb, take_screen_shot
 from helper.database import db
-from config import Config
+from config import Config, UPLOAD_CANCEL
 from pyrogram.types import CallbackQuery
 
 app = Client("test", api_id=Config.STRING_API_ID, api_hash=Config.STRING_API_HASH, session_string=Config.STRING_SESSION)
 
 @Client.on_callback_query(filters.regex("cancel"))
 async def cancel_callback(bot, query: CallbackQuery):
+    user_id = callback_query.from_user.id
+    msg_id = callback_query.message.id
+    msg_key = f"{user_id}_{msg_id}"
     try:
+        UPLOAD_CANCEL[msg_key] = True
         await query.answer("Cancelled ❌", show_alert=False)
         await query.message.delete()
     except Exception as e:
@@ -43,6 +47,7 @@ async def rename(bot, message):
         
     print("Function called")
     file = getattr(message, message.media.value)
+
     filename = file.file_name  
     if file.file_size > 2000 * 1024 * 1024:
          return await message.reply_text("⚠️ Sorry Bro This Bot Doesn't Support Uploading Files Bigger Than 2GB")
@@ -176,10 +181,16 @@ async def rename(bot, message):
     file = message
 
     ms = await message.reply_text(text="Trying To Download.....",  reply_to_message_id=file.id)
-
+    msg_key = f"{message.chat.id}_{ms.id}"
+    UPLOAD_CANCEL[msg_key] = False
     try:
-        path = await bot.download_media(message=file, file_name=file_path,  progress=progress_for_pyrogram, progress_args=("**Download Started.... **", ms, time.time()))
+        path = await bot.download_media(message=file, file_name=file_path,  progress=progress_for_pyrogram, progress_args=("**Download Started.... **", ms, time.time(), msg_key))
         print(f"File downloaded to {path}")
+        if UPLOAD_CANCEL.get(msg_key):
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            raise Exception("Cancelled by user")
+            print("cancled")
     except Exception as e:
         print(f"Error downloading media: {e}")
         return await ms.edit(e)
