@@ -32,8 +32,7 @@ async def cancel_callback(bot, query: CallbackQuery):
         await query.message.delete()
         cancel_msg = await bot.send_message(
             chat_id=query.message.chat.id,
-            text=f"❌ Renaming Cancelled : <code>{file_name}</code>",
-            # parse_mode=ParseMode.HTML   
+            text=f"❌ Renaming has been cancelled for: :\n<code>{file_name}</code>",
         )
         await asyncio.sleep(15)
         await cancel_msg.delete()
