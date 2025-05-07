@@ -16,6 +16,13 @@ from config import Config
 
 app = Client("test", api_id=Config.STRING_API_ID, api_hash=Config.STRING_API_HASH, session_string=Config.STRING_SESSION)
 
+@Client.on_callback_query(filters.regex("cancel"))
+async def cancel_callback(bot, query: CallbackQuery):
+    try:
+        await query.answer("Cancelled ❌", show_alert=False)
+        await query.message.delete()
+    except Exception as e:
+        print(f"Cancel error: {e}")
 
 # Define the callback for the 'upload' buttons
 @Client.on_message(filters.private & (filters.document | filters.audio | filters.video) & filters.user(Config.ADMIN))
