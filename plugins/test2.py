@@ -11,7 +11,8 @@ BOT_TOKEN = Config.BOT_TOKEN
 async def mediainfo_remote_handler(client: Client, message: Message):
     reply = message.reply_to_message
 
-    if not (reply.document or reply.video or reply.audio):
+    media = reply.document or reply.video or reply.audio
+    if not media:
         await message.reply("❌ Please reply to a media file.")
         return
 
@@ -19,7 +20,7 @@ async def mediainfo_remote_handler(client: Client, message: Message):
         status = await message.reply("🔍 Getting Telegram CDN URL...")
 
         # Step 1: Get file info from Telegram
-        telegram_file = await client.get_file(reply.document or reply.video or reply.audio)
+        telegram_file = await client.get_file(media.file_id)
         file_path = telegram_file.file_path
         cdn_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
 
@@ -44,8 +45,8 @@ async def mediainfo_remote_handler(client: Client, message: Message):
         if len(output) < 4096:
             await status.edit(f"📄 MediaInfo:\n```\n{output[:4000]}\n```", parse_mode="markdown")
         else:
-            await status.edit("📄 MediaInfo is too large to display. Use `/download` to get the full file.")
-
+            await status.edit("📄 MediaInfo is too large to display. You can use `/download` to get the full file.")
     except Exception as e:
         log.exception("Error in remote mediainfo handler")
         await message.reply("❌ Failed to get MediaInfo from Telegram CDN.")
+
