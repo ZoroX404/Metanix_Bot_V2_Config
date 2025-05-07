@@ -20,10 +20,11 @@ app = Client("test", api_id=Config.STRING_API_ID, api_hash=Config.STRING_API_HAS
 @Client.on_callback_query(filters.regex("cancel"))
 async def cancel_callback(bot, query: CallbackQuery):
     print("cancel called.................")
-    user_id = callback_query.from_user.id
-    msg_id = callback_query.message.id
-    msg_key = f"{user_id}_{msg_id}"
+
     try:
+        user_id = callback_query.from_user.id
+        msg_id = callback_query.message.id
+        msg_key = f"{user_id}_{msg_id}"
         UPLOAD_CANCEL[msg_key] = True
         await query.answer("Cancelled ❌", show_alert=False)
         await query.message.delete()
