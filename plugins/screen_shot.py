@@ -136,19 +136,34 @@ async def screenshot_handler(client, message):
             minutes, seconds = divmod(remainder, 60)
             return f"{int(hours):02d}:{int(minutes):02d}:{int(seconds):02d}"
         
+        # Import the necessary types for media group
+        from pyrogram.types import InputMediaPhoto
+        
         media_group = []
         for i, (ss_path, timestamp) in enumerate(screenshot_paths):
-            media_group.append({
-                "type": "photo",
-                "media": ss_path,
-                "caption": f"Screenshot {i+1}/{ss_count} at {format_timestamp(timestamp)}"
-            })
+            # Only add caption to the first image due to Telegram limitations
+            caption = f"Screenshot {i+1}/{ss_count} at {format_timestamp(timestamp)}" if i == 0 else ""
+            media_group.append(
+                InputMediaPhoto(
+                    media=ss_path,
+                    caption=caption
+                )
+            )
         
-        # Send as a media group
-        await client.send_media_group(
-            chat_id=message.chat.id,
-            media=media_group
-        )
+        # Send as a media group if there are multiple screenshots
+        if len(media_group) > 0:
+            if len(media_group) == 1:
+                # For single screenshot, send as photo with full caption
+                await message.reply_photo(
+                    photo=screenshot_paths[0][0],
+                    caption=f"Screenshot from {file_name_2} at {format_timestamp(screenshot_paths[0][1])}"
+                )
+            else:
+                # For multiple screenshots, send as media group
+                await client.send_media_group(
+                    chat_id=message.chat.id,
+                    media=media_group
+                )
         
         await status_msg.delete()
         print("Upload complete")
