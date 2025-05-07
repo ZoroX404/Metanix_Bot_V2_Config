@@ -12,7 +12,7 @@ from PIL import Image
 from helper.utils import progress_for_pyrogram, convert, humanbytes, add_prefix_suffix, add_sprefix_suffix, add_prefix_ssuffix, add_sprefix_ssuffix
 from helper.ffmpeg import fix_thumb, take_screen_shot
 from helper.database import db
-from config import Config, UPLOAD_CANCEL
+from config import Config, UPLOAD_CANCEL, FILE_NAME
 from pyrogram.types import CallbackQuery
 
 app = Client("test", api_id=Config.STRING_API_ID, api_hash=Config.STRING_API_HASH, session_string=Config.STRING_SESSION)
@@ -26,11 +26,13 @@ async def cancel_callback(bot, query: CallbackQuery):
         msg_id = query.message.id
         msg_key = f"{user_id}_{msg_id}"
         UPLOAD_CANCEL[msg_key] = True
+        file_name = FILE_NAME.get(msg_key)
+        
         await query.answer("Cancelled ❌", show_alert=False)
         await query.message.delete()
         cancel_msg = await bot.send_message(
             chat_id=query.message.chat.id,
-            text="Cancelled ❌"
+            text=f"❌ Renaming Cancelled : {file_name}"
         )
         await asyncio.sleep(10)
         await cancel_msg.delete()
@@ -185,12 +187,14 @@ async def rename(bot, message):
         print(f"Error setting prefix/suffix: {e}")
         return await message.edit(f"⚠️ Something went wrong, can't set Prefix or Suffix \nError: {e}")
 
+    old_file_name = file.file_name
     file_path = f"downloads/{new_filename}"
     file = message
 
     ms = await message.reply_text(text="Trying To Download.....",  reply_to_message_id=file.id)
     msg_key = f"{message.chat.id}_{ms.id}"
     UPLOAD_CANCEL[msg_key] = False
+    FILE_NAME[msg_key] = f"{old_file_name}" 
     try:
         path = await bot.download_media(message=file, file_name=file_path,  progress=progress_for_pyrogram, progress_args=("**Download Started.... **", ms, time.time()))
         print(f"File downloaded to {path}")
