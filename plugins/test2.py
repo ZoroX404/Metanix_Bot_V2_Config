@@ -2,7 +2,7 @@ import subprocess
 import logging
 from pyrogram import Client, filters
 from pyrogram.types import Message
-from Config import config 
+from config import Config 
 
 log = logging.getLogger(__name__)
 
