@@ -37,7 +37,7 @@ async def mediainfo_remote_handler(client: Client, message: Message):
             return
 
         # Get the file info from Telegram
-        telegram_file = await client.get_file(file_id)
+        telegram_file = client.get_file(file_id)
         file_path = telegram_file.file_path
         cdn_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
 
