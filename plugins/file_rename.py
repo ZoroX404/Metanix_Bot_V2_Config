@@ -22,8 +22,8 @@ async def cancel_callback(bot, query: CallbackQuery):
     print("cancel called.................")
 
     try:
-        user_id = callback_query.from_user.id
-        msg_id = callback_query.message.id
+        user_id = query.from_user.id
+        msg_id = query.message.id
         msg_key = f"{user_id}_{msg_id}"
         UPLOAD_CANCEL[msg_key] = True
         await query.answer("Cancelled ❌", show_alert=False)
