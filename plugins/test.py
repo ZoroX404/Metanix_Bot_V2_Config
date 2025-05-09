@@ -231,7 +231,7 @@ class MediaInfoUtility:
 #     print(f"Help command from user {message.from_user.id}")
 #     await message.reply_text(Messages.HELP_TEXT)
 
-@app.on_message(filters.command("mediainfo") & filters.reply)
+@Client.on_message(filters.command("mediainfo") & filters.reply)
 async def mediainfo_command(client, message: Message):
     """
     Process /mediainfo command when replying to a message
